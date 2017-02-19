@@ -41,6 +41,69 @@ def plot_ip(hist, hist_max, filename):
     c1.Print(filename+'resolution.png')
 
 
+def myFitSliceY(h):
+    N = h.GetNbinsX()
+    name = h.GetName()
+    t = TCanvas('t_'+name, h.GetTitle(), 1600, 1200)
+    #
+    g = TF1('g', 'gaus')
+    myprof = TH1F()
+    h.ProjectionX(name+'_myprof').Copy(myprof)
+    myprof.SetName(name+'_myprof')
+    myprof.SetTitle('sigma, '+h.GetTitle())
+    #
+    nw = int(TMath.Sqrt(N)+0.5)
+    nh = int(N/nw)
+    while nh*nw < N:
+        nh += 1
+    t.Divide(nw, nh)
+    for n in range(1, N+1):
+        test = h.ProjectionY(name+'_ProjY_'+str(n), n, n)
+        test.SetTitle(h.GetTitle())
+        if test.GetEntries() > 50:
+            t.cd(n)
+            test.Fit(g)
+            test.DrawCopy()
+            ypos = test.GetMaximum()*0.1
+            sigma = g.GetParameter(2)
+            error = g.GetParError(2)
+            txt = 'Sigma='+'%4.2f' % (sigma)
+            tx = TText(-0.04, ypos, txt)
+            tx.DrawText(-0.04, ypos, txt)
+            myprof.SetBinContent(n, sigma)
+            myprof.SetBinError(n, error)
+    return t, myprof
+
+
+def print_sigma(h):
+    fun = TF1('g', 'gaus')
+    h.Fit(fun)
+    h.DrawCopy()
+    a0 = fun.GetParameter(1)
+    a1 = fun.GetParameter(2)
+    ea0 = fun.GetParError(1)
+    ea1 = fun.GetParError(2)
+    if a0 < 0.01:
+        a0 = a0*1000.
+        ea0 = ea0*1000.
+        txt = 'Mean='+'(%4.2f' % (a0)+'+/-'+'%4.2f' % (ea0)+')*10E-3'
+    else:
+        txt = 'Mean='+'%4.2f' % (a0)+'+/-'+'%4.2f' % (ea0)
+    height = h.GetMaximum()*0.94
+    posx = h.GetBinLowEdge(2)
+    tx = TText(posx, height, txt)
+    tx.DrawText(posx, height, txt)
+    if a1 < 0.01:
+        a1 = a1*1000.
+        ea1 = ea1*1000.
+        txt = 'Sigma='+'(%4.2f' % (a1)+'+/-'+'%4.2f' % (ea1)+')*10E-3'
+    else:
+        txt = 'Sigma='+'%4.2f' % (a1)+'+/-'+'%4.2f' % (ea1)
+    height = h.GetMaximum()*0.86
+    tx = TText(posx, height, txt)
+    tx.DrawText(posx, height, txt)
+
+
 def run_script():
     Range = GaudiPython.gbl.std.pair('double', 'double')
 
@@ -132,13 +195,16 @@ def run_script():
             result = extrap.propagate(astate, ovx.z())
             traj = LineTraj(astate.position(), astate.slopes(), Range(-1000., 1000.))
             dis = XYZVector()
-            success = poca.minimize(traj, Double(0.1), ovx, dis, Double(0.1))
+            s = Double(0.1)
+            a = Double(0.0005)
+            success = poca.minimize(traj, s, ovx, dis, a)
+            print(s, a)
             if success.isFailure() > 0:
                 continue
             ip = dis.r()
             if dis.z() < 0:
                 ip = -ip
-            p_ontrack = traj.position(0.1)
+            p_ontrack = traj.position(s)
             ipx = p_ontrack.x()-ovx.x()
             ipy = p_ontrack.y()-ovx.y()
             ipz = p_ontrack.z()-ovx.z()
@@ -167,44 +233,7 @@ def run_script():
         h.Write()
     f.Close()
 
-    ApplicationMgr, INFO, EventSelector, LHCbMath, linkedTo
-
-    ###########################################################################
-    # g = TF1('g', 'gaus')
     c1 = TCanvas('c1', '', 750, 500)
-
-    def myFitSliceY(h):
-        N = h.GetNbinsX()
-        name = h.GetName()
-        t = TCanvas('t_'+name, h.GetTitle(), 1600, 1200)
-        #
-        g = TF1('g', 'gaus')
-        myprof = TH1F()
-        h.ProjectionX(name+'_myprof').Copy(myprof)
-        myprof.SetName(name+'_myprof')
-        myprof.SetTitle('sigma, '+h.GetTitle())
-        #
-        nw = int(TMath.Sqrt(N)+0.5)
-        nh = int(N/nw)
-        while nh*nw < N:
-            nh += 1
-        t.Divide(nw, nh)
-        for n in range(1, N+1):
-            test = h.ProjectionY(name+'_ProjY_'+str(n), n, n)
-            test.SetTitle(h.GetTitle())
-            if test.GetEntries() > 50:
-                t.cd(n)
-                test.Fit(g)
-                test.DrawCopy()
-                ypos = test.GetMaximum()*0.1
-                sigma = g.GetParameter(2)
-                error = g.GetParError(2)
-                txt = 'Sigma='+'%4.2f' % (sigma)
-                tx = TText(-0.04, ypos, txt)
-                tx.DrawText(-0.04, ypos, txt)
-                myprof.SetBinContent(n, sigma)
-                myprof.SetBinError(n, error)
-        return t, myprof
 
     tcp = TCanvas('tcp', 'momentum resolution', 750, 500)
     tcp.Divide(1, 1)
@@ -255,45 +284,15 @@ def run_script():
         ex = h_IPx_myprof.GetBinError(n)
         ey = h_IPy_myprof.GetBinError(n)
         ez = h_IPz_myprof.GetBinError(n)
-        sigma = 999.
-        if sigma > 0:
-            error = TMath.Sqrt(sx*sx*ex*ex+sy*sy*ey*ey+sz*sz*ez*ez)/sigma
+        error = TMath.Sqrt(sx*sx*ex*ex + sy*sy*ey*ey + sz*sz*ez*ez)/sigma
         h_IPxy_myprof.SetBinError(n, error)
 
-    plot_ip(h_IPxy_myprof, 0.25, 'IP')
+    plot_ip(h_IPxy_myprof, 0.1, 'IP')
     plot_ip(h_IPx_myprof, 0.1, 'IPX')
     plot_ip(h_IPy_myprof, 0.1, 'IPY')
+    plot_ip(h_IPz_myprof, 0.1, 'IPZ')
 
     tp, h_p_myprof = myFitSliceY(h_P)
-
-    def print_sigma(h):
-        g = TF1('g', 'gaus')
-        h.Fit(g)
-        h.DrawCopy()
-        fun = gROOT.FindObjectAny('g')
-        a0 = fun.GetParameter(1)
-        a1 = fun.GetParameter(2)
-        ea0 = fun.GetParError(1)
-        ea1 = fun.GetParError(2)
-        if a0 < 0.01:
-            a0 = a0*1000.
-            ea0 = ea0*1000.
-            txt = 'Mean='+'(%4.2f' % (a0)+'+/-'+'%4.2f' % (ea0)+')*10E-3'
-        else:
-            txt = 'Mean='+'%4.2f' % (a0)+'+/-'+'%4.2f' % (ea0)
-        height = h.GetMaximum()*0.94
-        posx = h.GetBinLowEdge(2)
-        tx = TText(posx, height, txt)
-        tx.DrawText(posx, height, txt)
-        if a1 < 0.01:
-            a1 = a1*1000.
-            ea1 = ea1*1000.
-            txt = 'Sigma='+'(%4.2f' % (a1)+'+/-'+'%4.2f' % (ea1)+')*10E-3'
-        else:
-            txt = 'Sigma='+'%4.2f' % (a1)+'+/-'+'%4.2f' % (ea1)
-        height = h.GetMaximum()*0.86
-        tx = TText(posx, height, txt)
-        tx.DrawText(posx, height, txt)
 
     gStyle.SetOptFit(0)
 

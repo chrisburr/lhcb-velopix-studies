@@ -7,7 +7,7 @@ from ROOT import (
     TFile, TCanvas, TH1F, TH2F, gROOT, TF1, gStyle, TText, TMath, Double
 )
 import Panoramix
-from LHCbConfig import ApplicationMgr, INFO, EventSelector, LHCbMath, lhcbApp, CondDB, addDBTags
+from LHCbConfig import ApplicationMgr, INFO, EventSelector, lhcbApp, CondDB, addDBTags
 from LHCbMath import XYZVector
 # from Configurables import CondDB, LHCbApp
 # from LHCbConfig import *
@@ -24,17 +24,26 @@ MCParticle = GaudiPython.gbl.LHCb.MCParticle
 Track = GaudiPython.gbl.LHCb.Track
 
 
+def plot_ip(hist, hist_max, filename):
+    c1 = TCanvas('c1', '', 750, 500)
+    c1.cd()
+    hist.SetStats(0)
+    hist.SetMinimum(0.)
+    hist.SetMaximum(hist_max)
+    fun = TF1('pol1', 'pol1')
+    hist.Fit(fun)
+    a0 = fun.GetParameter(0)*1000.
+    a1 = fun.GetParameter(1)*1000.
+    # txt = 'Sigma=%4.1f+%4.1f/pt'
+    txt = 'Sigma='+'%4.1f' % (a0)+'+'+'%4.1f' % (a1)+'/pt'
+    tx = TText(0.25, 0.1, txt)
+    tx.DrawText(0.25, 0.1, txt)
+    c1.Print(filename+'resolution.png')
+
+
 def run_script():
     Range = GaudiPython.gbl.std.pair('double', 'double')
-    valid = Range(-1000., 1000.)
 
-    upgrade = True
-    # if os.environ['HOST'].find('lxplus') > -1:
-    #     lxplus = True
-    # else:
-    #     lxplus = False
-
-    # fullreco = False
     Nevents = 5000
     optSlope = 6
 
@@ -42,27 +51,6 @@ def run_script():
     slopemax = [0.025, 0.05,  0.075, 0.1,   0.125, 0.15,  10.]
 
     files = ['/afs/cern.ch/work/c/cburr/Brunel.xdst']
-    # if lxplus:
-    #     afile = '/castor/cern.ch/grid/lhcb/MC/2010/XDST/00005879/0000/00006198_00000XXX_1.xdst'
-    #     for n in range(1, 10):
-    #         ff = afile.replace('XXX', '%(X)03d' % {'X': n})
-    #         x = os.system('nsls '+ff)
-    #         if x == 0:
-    #             files.append(ff)
-    # else:
-    #     files = ['$PANORAMIXDATA/Sel_00006198_00000001_1.xdst']
-
-    # if len(sys.argv) == 1:
-    #     print('give input file(s)')
-    # else:
-    #     files = []
-    #     for t in sys.argv[1].split(','):
-    #         if not t.find('eoslhcb') < 0 and t.find('root') < 0:
-    #             files.append('root:'+t)
-    #         else:
-    #             files.append(t)
-
-    # configure Gaudi with database tags from first event under Rec/Header
 
     lhcbApp.DataType = 'Upgrade'
     lhcbApp.setProp(
@@ -72,37 +60,15 @@ def run_script():
     CondDB().Upgrade = True
 
     IOHelper('ROOT').inputFiles(files)
-    # CondDB().addLayer(dbFile='/afs/cern.ch/lhcb/software/releases/SQLite/SQLDDDB_Upgrade/db/DDDB.db/DDDB', dbName='DDDB')
-    # CondDB().addLayer(dbFile='/afs/cern.ch/lhcb/software/releases/SQLite/SQLDDDB_Upgrade/db/SIMCOND.db/SIMCOND', dbName='SIMCOND')
-    # CondDB().Upgrade = True
-    # CondDB().LoadCALIBDB = "HLT1"
-    # /afs/cern.ch/lhcb/software/releases/SQLite/SQLDDDB_Upgrade/db/SIMCOND.db/SIMCOND
-    # lhcbApp.Upgrade = True
-    # lhcbApp.DataType = 'Upgrade'
-    # lhcbApp.Simulation = True
-    # lhcbApp.DDDBtag = "dddb-20160304"
-    # lhcbApp.CondDBtag = "sim-20150716-vc-md100"
     addDBTags(files[0])
-    # LHCbApp().DDDBtag = "dddb-20160304"
-    # LHCbApp().CondDBtag = "sim-20150716-vc-md100"
 
-    fitter = ConfiguredMasterFitter("TrackMasterFitter")
-    appConf = ApplicationMgr(OutputLevel=INFO, AppName='IPandPresol')
+    ConfiguredMasterFitter("TrackMasterFitter")
+    ApplicationMgr(OutputLevel=INFO, AppName='IPandPresol')
 
     EventSelector().PrintFreq = 100
     appMgr = GaudiPython.AppMgr()
 
-    # sel = appMgr.evtsel()
     evt = appMgr.evtsvc()
-    his = appMgr.histsvc()
-    det = appMgr.detsvc()
-    part = appMgr.ppSvc()
-    toolSvc = appMgr.toolSvc()
-
-    # sel.open(files)
-    # vdet = det['/dd/Structure/LHCb/BeforeMagnetRegion/VL']
-    # vdet = det['/dd/Structure/LHCb/BeforeMagnetRegion/VP']
-    # vdet = det['/dd/Structure/LHCb/BeforeMagnetRegion/Velo']
 
     h_IP = TH2F('h_IP', ' IP for long tracks vs. 1/pt', 25, 0., 5.,  100, -0.5, 0.5)
     h_IPx = TH2F('h_IPx', ' IPx for long tracks vs. 1/pt', 25, 0., 5., 100, -0.5, 0.5)
@@ -120,23 +86,16 @@ def run_script():
     h_firstHit = TH1F('h_firstHit', ' r of first measured point', 100, 0.0, 50.0)
 
     poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
-    # extrap = appMgr.toolsvc().create('TrackMasterExtrapolator', interface='ITrackExtrapolator')
-    # TODO Do I need this? Hmmm???
-    # extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
-    # does not work for upgrade
-    if upgrade:
-        fitterTool = Panoramix.getTool('TrackMasterFitter', 'ITrackFitter')
-        fitterTool = appMgr.toolsvc().create('TrackInitFit', 'ITrackFitter')
+    extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
+    Panoramix.getTool('TrackMasterFitter', 'ITrackFitter')
+    appMgr.toolsvc().create('TrackInitFit', 'ITrackFitter')
 
-    nevents = 0
     for k in range(Nevents):
-        nevents += 1
         appMgr.run(1)
         cont = evt['Rec/Track/Best']
         if not cont:
             break
-        n = cont.size()
-        contmc = evt['MC/Particles']
+
         l2mc = linkedTo(MCParticle, Track, 'Rec/Track/Best')
         for t in cont:
             if t.type() != t.Long:
@@ -170,20 +129,16 @@ def run_script():
                     break
             # extrapolate to mc origin vertex
             astate = t.firstState().clone()
-            # TODO Do I need this? result = extrap.propagate(astate, ovx.z())
-            apoint = astate.position()
-            adirec = astate.slopes()
-            traj = LineTraj(apoint,  adirec, valid)
+            result = extrap.propagate(astate, ovx.z())
+            traj = LineTraj(astate.position(), astate.slopes(), Range(-1000., 1000.))
             dis = XYZVector()
-            s = Double(0.1)
-            a = Double(0.0005)
-            success = poca.minimize(traj, s, ovx, dis, a)
+            success = poca.minimize(traj, Double(0.1), ovx, dis, Double(0.1))
             if success.isFailure() > 0:
                 continue
             ip = dis.r()
             if dis.z() < 0:
                 ip = -ip
-            p_ontrack = traj.position(s)
+            p_ontrack = traj.position(0.1)
             ipx = p_ontrack.x()-ovx.x()
             ipy = p_ontrack.y()-ovx.y()
             ipz = p_ontrack.z()-ovx.z()
@@ -273,17 +228,17 @@ def run_script():
     tr.Print('radiusOfFirstMeasurement.png')
 
     tipx, h_IPx_myprof = myFitSliceY(h_IPx)
-    gROOT.FindObjectAny('c1').cd()
+    c1.cd()
     h_IPx_myprof.Draw()
     h_IPx_myprof.Fit('pol1')
 
     tipy, h_IPy_myprof = myFitSliceY(h_IPy)
-    gROOT.FindObjectAny('c1').cd()
+    c1.cd()
     h_IPy_myprof.Draw()
     h_IPy_myprof.Fit('pol1')
 
     tipz, h_IPz_myprof = myFitSliceY(h_IPz)
-    gROOT.FindObjectAny('c1').cd()
+    c1.cd()
     h_IPz_myprof.Draw()
     h_IPz_myprof.Fit('pol1')
 
@@ -291,11 +246,11 @@ def run_script():
     h_IPx_myprof.Copy(h_IPxy_myprof)
     h_IPxy_myprof.SetName('h_IPxy_myprof')
     h_IPxy_myprof.SetTitle('sigma IP as function of 1/pt')
-    for n in range(2, h_IPx_myprof.GetNbinsX()+1):
+    for n in range(1, h_IPx_myprof.GetNbinsX()+1):
         sx = h_IPx_myprof.GetBinContent(n)
         sy = h_IPy_myprof.GetBinContent(n)
         sz = h_IPz_myprof.GetBinContent(n)
-        sigma = TMath.Sqrt(sx*sx+sy*sy+sz*sz)
+        sigma = TMath.Sqrt(sx*sx + sy*sy + sz*sz)
         h_IPxy_myprof.SetBinContent(n, sigma)
         ex = h_IPx_myprof.GetBinError(n)
         ey = h_IPy_myprof.GetBinError(n)
@@ -305,41 +260,9 @@ def run_script():
             error = TMath.Sqrt(sx*sx*ex*ex+sy*sy*ey*ey+sz*sz*ez*ez)/sigma
         h_IPxy_myprof.SetBinError(n, error)
 
-    gROOT.FindObjectAny('c1').cd()
-    h_IPxy_myprof.SetStats(0)
-    h_IPx_myprof.SetStats(0)
-    h_IPy_myprof.SetStats(0)
-    h_IPxy_myprof.SetMinimum(0.)
-    h_IPxy_myprof.SetMaximum(0.25)
-    h_IPxy_myprof.Fit('pol1')
-    fun = gROOT.FindObjectAny('pol1')
-    a0 = fun.GetParameter(0)*1000.
-    a1 = fun.GetParameter(1)*1000.
-    txt = 'Sigma='+'%4.1f' % (a0)+'+'+'%4.1f' % (a1)+'/pt'
-    tx = TText(0.25, 0.1, txt)
-    tx.DrawText(0.25, 0.1, txt)
-    gROOT.FindObjectAny('c1').Print('IPresolution.png')
-
-    h_IPx_myprof.SetMinimum(0.)
-    h_IPx_myprof.SetMaximum(0.25)
-    h_IPx_myprof.Fit('pol1')
-    fun = gROOT.FindObjectAny('pol1')
-    a0 = fun.GetParameter(0)*1000.
-    a1 = fun.GetParameter(1)*1000.
-    txt = 'Sigma='+'%4.1f' % (a0)+'+'+'%4.1f' % (a1)+'/pt'
-    tx = TText(0.25, 0.1, txt)
-    tx.DrawText(0.25, 0.1, txt)
-    gROOT.FindObjectAny('c1').Print('IPXresolution.png')
-    h_IPy_myprof.SetMinimum(0.)
-    h_IPy_myprof.SetMaximum(0.25)
-    h_IPy_myprof.Fit('pol1')
-    fun = gROOT.FindObjectAny('pol1')
-    a0 = fun.GetParameter(0)*1000.
-    a1 = fun.GetParameter(1)*1000.
-    txt = 'Sigma='+'%4.1f' % (a0)+'+'+'%4.1f' % (a1)+'/pt'
-    tx = TText(0.25, 0.1, txt)
-    tx.DrawText(0.25, 0.1, txt)
-    gROOT.FindObjectAny('c1').Print('IPYresolution.png')
+    plot_ip(h_IPxy_myprof, 0.25, 'IP')
+    plot_ip(h_IPx_myprof, 0.1, 'IPX')
+    plot_ip(h_IPy_myprof, 0.1, 'IPY')
 
     tp, h_p_myprof = myFitSliceY(h_P)
 
@@ -373,6 +296,7 @@ def run_script():
         tx.DrawText(posx, height, txt)
 
     gStyle.SetOptFit(0)
+
     tpull = TCanvas('tpull', 'pull distributions', 1200, 800)
     tpull.Divide(3, 2)
     tpull.cd(1)

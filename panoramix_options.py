@@ -85,7 +85,6 @@ def run_script():
             # Only take tracks with unique link to MC truth
             # TODO: Is this a good idea?
             if track_to_mc.range(track).size() != 1:
-                print('#'*60, 'Found multiple truth relations for track')
                 continue
             # Find the MCParticle for this track
             mc_particle = track_to_mc.first(track)
@@ -131,24 +130,19 @@ def run_script():
             h_IPx.Fill(one_over_pt, ipx)
             h_IPy.Fill(one_over_pt, ipy)
             h_IPz.Fill(one_over_pt, ipz)
-            delp = (track.p()-true_p)/true_p
-            h_P.Fill(true_p/1000., delp)
+            delta_p = (track.p()-true_p)/true_p
+            h_P.Fill(true_p/1000., delta_p)
             h_pmc.Fill(track.p()/1000., true_p/1000.)
             delsx = (astate.tx()-true_momentum.x()/true_momentum.z())
             delsy = (astate.ty()-true_momentum.y()/true_momentum.z())
             h_sx.Fill(true_p/1000., delsx)
             h_sy.Fill(true_p/1000., delsy)
             # pull plots
-            p_P.Fill(true_p/1000., (delp*true_p)/(sqrt(astate.errQOverP2())*track.p()*track.p()))
+            p_P.Fill(true_p/1000., (delta_p*true_p)/(sqrt(astate.errQOverP2()) * track.p()**2))
             p_IPx.Fill(one_over_pt, ipx/sqrt(astate.errX2()))
             p_IPy.Fill(one_over_pt, ipy/sqrt(astate.errY2()))
             p_sx.Fill(true_p/1000., delsx/sqrt(astate.errTx2()))
             p_sy.Fill(true_p/1000., delsy/sqrt(astate.errTy2()))
-
-    f = TFile('IPandPresol_'+str(optSlope)+'_upgrade.root', 'recreate')
-    for h in gROOT.GetList():
-        h.Write()
-    f.Close()
 
     tcp = TCanvas('tcp', 'momentum resolution', 750, 500)
     tcp.Divide(1, 1)
@@ -160,39 +154,21 @@ def run_script():
     h_P_prof.SetMaximum(0.015)
     h_P_prof.SetMinimum(0.0)
     h_P_prof.SetTitle('Momentum resolution as function of p')
+    h_P_prof.SetStats(0)
     h_P_prof.Draw()
     h_P_prof.Fit('pol1')
     tcp.Print('MomentumResolution.png')
 
     tr = TCanvas('tr', 'minimum r', 750, 500)
+    h_firstHit.SetStats(0)
     h_firstHit.Draw()
     gStyle.SetOptFit(111)
     tr.Print('radiusOfFirstMeasurement.png')
 
-    tipx, h_IPx_myprof = myFitSliceY(h_IPx)
-    tipy, h_IPy_myprof = myFitSliceY(h_IPy)
-    tipz, h_IPz_myprof = myFitSliceY(h_IPz)
-
-    h_IPxy_myprof = TH1F()
-    h_IPx_myprof.Copy(h_IPxy_myprof)
-    h_IPxy_myprof.SetName('h_IPxy_myprof')
-    h_IPxy_myprof.SetTitle('sigma IP as function of 1/pt')
-    for n in range(1, h_IPx_myprof.GetNbinsX()+1):
-        sx2 = h_IPx_myprof.GetBinContent(n)**2
-        sy2 = h_IPy_myprof.GetBinContent(n)**2
-        sz2 = h_IPz_myprof.GetBinContent(n)**2
-        sigma = sqrt(sx2 + sy2 + sz2)
-        h_IPxy_myprof.SetBinContent(n, sigma)
-        ex2 = h_IPx_myprof.GetBinError(n)**2
-        ey2 = h_IPy_myprof.GetBinError(n)**2
-        ez2 = h_IPz_myprof.GetBinError(n)**2
-        error = sqrt(sx2*ex2 + sy2*ey2 + sz2*ez2)/sigma
-        h_IPxy_myprof.SetBinError(n, error)
-
-    plot_ip(h_IPxy_myprof, 0.1, 'IP')
-    plot_ip(h_IPx_myprof, 0.1, 'IPX')
-    plot_ip(h_IPy_myprof, 0.1, 'IPY')
-    plot_ip(h_IPz_myprof, 0.1, 'IPZ')
+    plot_ip(h_IP, 0.1, 'IP')
+    plot_ip(h_IPx, 0.1, 'IPX')
+    plot_ip(h_IPy, 0.1, 'IPY')
+    plot_ip(h_IPz, 0.1, 'IPZ')
 
     gStyle.SetOptFit(0)
 
@@ -205,8 +181,13 @@ def run_script():
         (h_sx, 'slope x'), (h_sy, 'slope y'), (h_P, 'p')
     ])
 
+    f = TFile('VeloPix_studies.root', 'recreate')
+    for obj in gROOT.GetList():
+        obj.Write()
+    f.Close()
 
-def myFitSliceY(h):
+
+def make_profile(h):
     N = h.GetNbinsX()
     name = h.GetName()
     t = TCanvas('t_'+name, h.GetTitle(), 1600, 1200)
@@ -269,7 +250,8 @@ def print_sigma(h):
 
 
 def plot_ip(hist, hist_max, filename):
-    c1 = TCanvas('c1', '', 750, 500)
+    fits_canvas, hist = make_profile(hist)
+    c1 = TCanvas(hist.GetName()+'_c', '', 750, 500)
     hist.SetStats(0)
     hist.SetMinimum(0.)
     hist.SetMaximum(hist_max)
@@ -286,9 +268,9 @@ def plot_ip(hist, hist_max, filename):
 
 def plot_split_canv(plot_type, plots):
     assert len(plots) == 6
-    split_cav = TCanvas('split_cav', plot_type, 1200, 800)
+    split_cav = TCanvas(plot_type+'_split_cav', plot_type, 1200, 800)
     split_cav.Divide(3, 2)
-    for i, (hist, title) in enumerate(plots):
+    for i, (hist, title) in enumerate(plots, start=1):
         if hist is not None:
             split_cav.cd(i)
             h = hist.ProjectionY()

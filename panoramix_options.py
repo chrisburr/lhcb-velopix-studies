@@ -5,13 +5,13 @@ from __future__ import print_function
 from math import sqrt
 
 import pandas as pd
+import scipy.optimize
 
 from ROOT import (
     TFile, TCanvas, TH1F, TH2F, gROOT, TF1, gStyle, TText, Double
 )
 import Panoramix
 from LHCbConfig import ApplicationMgr, INFO, EventSelector, lhcbApp, CondDB, addDBTags
-from LHCbMath import XYZVector
 from TrackFitter.ConfiguredFitters import ConfiguredMasterFitter
 import GaudiPython
 from GaudiConf import IOHelper
@@ -128,21 +128,13 @@ def run_script():
     h_pmc = TH2F('h_pmc', 'p mc vs p rec ', 25, 0., 150.,  25, 0., 150.)
     h_firstHit = TH1F('h_firstHit', ' r of first measured point', 100, 0.0, 50.0)
 
-    df = pd.DataFrame(columns=[
-        'true_pid', 'track_type', 'true_rho',
-        'true_p', 'true_pt', 'true_px', 'true_py', 'true_pz',
-        'reco_p', 'reco_pt',
-        'true_vertex_x', 'true_vertex_y', 'true_vertex_z',
-        'reco_vertex_x', 'reco_vertex_xerr', 'reco_vertex_y', 'reco_vertex_yerr', 'reco_vertex_z',
-        'reco_slope_x', 'reco_slope_xerr', 'reco_slope_y', 'reco_slope_yerr', 'reco_slope_errQOverP2'
-    ])
+    data = []
 
-    poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
     extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
     Panoramix.getTool('TrackMasterFitter', 'ITrackFitter')
     appMgr.toolsvc().create('TrackInitFit', 'ITrackFitter')
 
-    while True:
+    for i in range(100):
         appMgr.run(1)
         if not evt['/Event/Rec/Header']:
             break
@@ -185,22 +177,22 @@ def run_script():
             astate = track.firstState().clone()
             extrap.propagate(astate, mc_vertex.z())
             traj = LineTraj(astate.position(), astate.slopes(), Range(-1000., 1000.))
-            dis = XYZVector()
-            mu = Double(0.1)
-            precision = Double(0.0005)
-            success = poca.minimize(traj, mu, mc_vertex, dis, precision)
-            if success.isFailure() > 0:
-                print('#'*60, 'TRACK FAILED')
-                continue
-            ip = dis.r()
-            if dis.z() < 0:
-                ip = -ip
-            p_ontrack = traj.position(mu)
+            # Find the mu corresponding to z=0
+            result = scipy.optimize.minimize(
+                lambda mu: abs(traj.position(Double(mu)).z()-mc_vertex.z()),
+                [traj.muEstimate(mc_vertex)]
+            )
+            # print(result)
+            p_ontrack = traj.position(Double(result.x[0]))
+
             ipx = p_ontrack.x()-mc_vertex.x()
             ipy = p_ontrack.y()-mc_vertex.y()
             ipz = p_ontrack.z()-mc_vertex.z()
+            # IPz should be zero by definition
+            assert abs(ipz) < 1e-7
+            ip = sqrt(ipx**2 + ipy**2 + ipz**2)
 
-            df.loc[len(df)] = (
+            data.append([
                 mc_particle.particleID().pid(), int(track.type()), pos.rho(),
                 true_momentum.P(), true_momentum.pt(),
                 true_momentum.px(), true_momentum.py(), true_momentum.pz(),
@@ -211,7 +203,7 @@ def run_script():
                 p_ontrack.z(),
                 astate.tx(), sqrt(astate.errTx2()), astate.ty(), sqrt(astate.errTy2()),
                 sqrt(astate.errQOverP2())
-            )
+            ])
 
             # Fill histograms
             h_IP.Fill(one_over_pt, ip)
@@ -232,6 +224,14 @@ def run_script():
             p_sx.Fill(true_p/1000., delsx/sqrt(astate.errTx2()))
             p_sy.Fill(true_p/1000., delsy/sqrt(astate.errTy2()))
 
+    df = pd.DataFrame(data=data, columns=[
+        'true_pid', 'track_type', 'true_rho',
+        'true_p', 'true_pt', 'true_px', 'true_py', 'true_pz',
+        'reco_p', 'reco_pt',
+        'true_vertex_x', 'true_vertex_y', 'true_vertex_z',
+        'reco_vertex_x', 'reco_vertex_xerr', 'reco_vertex_y', 'reco_vertex_yerr', 'reco_vertex_z',
+        'reco_slope_x', 'reco_slope_xerr', 'reco_slope_y', 'reco_slope_yerr', 'reco_slope_errQOverP2'
+    ])
     df.to_json('VeloPix_studies.json')
 
     tcp = TCanvas('tcp', 'momentum resolution', 750, 500)

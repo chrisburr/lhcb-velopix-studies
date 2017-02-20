@@ -186,16 +186,16 @@ def run_script():
             extrap.propagate(astate, mc_vertex.z())
             traj = LineTraj(astate.position(), astate.slopes(), Range(-1000., 1000.))
             dis = XYZVector()
-            s = Double(0.1)
-            a = Double(0.0005)
-            success = poca.minimize(traj, s, mc_vertex, dis, a)
+            mu = Double(0.1)
+            precision = Double(0.0005)
+            success = poca.minimize(traj, mu, mc_vertex, dis, precision)
             if success.isFailure() > 0:
                 print('#'*60, 'TRACK FAILED')
                 continue
             ip = dis.r()
             if dis.z() < 0:
                 ip = -ip
-            p_ontrack = traj.position(s)
+            p_ontrack = traj.position(mu)
             ipx = p_ontrack.x()-mc_vertex.x()
             ipy = p_ontrack.y()-mc_vertex.y()
             ipz = p_ontrack.z()-mc_vertex.z()

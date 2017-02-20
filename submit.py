@@ -34,7 +34,7 @@ Brunel().EvtMax = {evt_max}
 # Configure the corresponding Job
 brunel_job = Job(
     name='VP hybrid distortions',
-    comment='Nominal reconstruction test',
+    comment='Nominal reconstruction'+['', ' (Local)'][RUN_LOCAL],
     application=brunel,
     splitter=SplitByFiles(filesPerJob=1, ignoremissing=True),
     parallel_submit=True

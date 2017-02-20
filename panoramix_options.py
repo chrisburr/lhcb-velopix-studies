@@ -8,7 +8,7 @@ import pandas as pd
 import scipy.optimize
 
 from ROOT import (
-    TFile, TCanvas, TH1F, TH2F, gROOT, TF1, gStyle, TText, Double
+    TFile, TCanvas, TH1F, TH2F, gROOT, TF1, gStyle, TText, Double, TLatex
 )
 import Panoramix
 from LHCbConfig import ApplicationMgr, INFO, EventSelector, lhcbApp, CondDB, addDBTags
@@ -113,20 +113,20 @@ def run_script():
 
     evt = appMgr.evtsvc()
 
-    h_IP = TH2F('h_IP', ' IP for long tracks vs. 1/pt', 25, 0., 5.,  100, -0.5, 0.5)
-    h_IPx = TH2F('h_IPx', ' IPx for long tracks vs. 1/pt', 25, 0., 5., 100, -0.5, 0.5)
-    h_IPy = TH2F('h_IPy', ' IPy for long tracks vs. 1/pt', 25, 0., 5., 100, -0.5, 0.5)
-    h_IPz = TH2F('h_IPz', ' IPz for long tracks vs. 1/pt', 25, 0., 5., 100, -0.5, 0.5)
-    h_P = TH2F('h_P', ' delp/p for long tracks vs. p', 25, 0., 150., 100, -0.04, 0.04)
-    h_sx = TH2F('h_sx', ' res slope x for long tracks vs. p', 25, 0., 150., 100, -0.005, 0.005)
-    h_sy = TH2F('h_sy', ' res slope y for long tracks vs. p', 25, 0., 150., 100, -0.005, 0.005)
-    p_P = TH2F('p_P', ' pull delp/p for long tracks vs. p', 25, 0., 150., 100, -5.0, 5.0)
-    p_IPx = TH2F('p_IPx', ' pull delx for long tracks vs. p', 25, 0., 5., 100, -5.0, 5.0)
-    p_IPy = TH2F('p_IPy', ' pull dely for long tracks vs. p', 25, 0., 5., 100, -5.0, 5.0)
-    p_sx = TH2F('p_sx', 'pull res slope x for long tracks vs. p', 25, 0., 150., 100, -5.0, 5.0)
-    p_sy = TH2F('p_sy', 'pull res slope y for long tracks vs. p', 25, 0., 150., 100, -5.0, 5.0)
+    h_IP = TH2F('h_IP', ' IP for long tracks vs. 1/pt', 25, 0., 5., 101, 0., 0.5)
+    h_IPx = TH2F('h_IPx', ' IPx for long tracks vs. 1/pt', 25, 0., 5., 101, -0.5, 0.5)
+    h_IPy = TH2F('h_IPy', ' IPy for long tracks vs. 1/pt', 25, 0., 5., 101, -0.5, 0.5)
+    h_IPz = TH2F('h_IPz', ' IPz for long tracks vs. 1/pt', 25, 0., 5., 101, -1e-8, 1e-8)
+    h_P = TH2F('h_P', ' delp/p for long tracks vs. p', 25, 0., 150., 101, -0.04, 0.04)
+    h_sx = TH2F('h_sx', ' res slope x for long tracks vs. p', 25, 0., 150., 101, -0.005, 0.005)
+    h_sy = TH2F('h_sy', ' res slope y for long tracks vs. p', 25, 0., 150., 101, -0.005, 0.005)
+    p_P = TH2F('p_P', ' pull delp/p for long tracks vs. p', 25, 0., 150., 101, -5.0, 5.0)
+    p_IPx = TH2F('p_IPx', ' pull delx for long tracks vs. p', 25, 0., 5., 101, -5.0, 5.0)
+    p_IPy = TH2F('p_IPy', ' pull dely for long tracks vs. p', 25, 0., 5., 101, -5.0, 5.0)
+    p_sx = TH2F('p_sx', 'pull res slope x for long tracks vs. p', 25, 0., 150., 101, -5.0, 5.0)
+    p_sy = TH2F('p_sy', 'pull res slope y for long tracks vs. p', 25, 0., 150., 101, -5.0, 5.0)
     h_pmc = TH2F('h_pmc', 'p mc vs p rec ', 25, 0., 150.,  25, 0., 150.)
-    h_firstHit = TH1F('h_firstHit', ' r of first measured point', 100, 0.0, 50.0)
+    h_firstHit = TH1F('h_firstHit', ' r of first measured point', 101, 0.0, 50.0)
 
     data = []
 
@@ -134,7 +134,7 @@ def run_script():
     Panoramix.getTool('TrackMasterFitter', 'ITrackFitter')
     appMgr.toolsvc().create('TrackInitFit', 'ITrackFitter')
 
-    for i in range(100):
+    while True:
         appMgr.run(1)
         if not evt['/Event/Rec/Header']:
             break
@@ -351,14 +351,16 @@ def plot_ip(hist, hist_max, filename):
     hist.SetStats(0)
     hist.SetMinimum(0.)
     hist.SetMaximum(hist_max)
+    hist.GetXaxis().SetTitle("P_{T} #left[GeV^{-1}#right]")
+    hist.GetYaxis().SetTitle("IP_{{{0}}} resolution #left[ mm #right]".format(filename[2:]))
     fun = TF1('pol1', 'pol1')
     hist.Fit(fun)
     a0 = fun.GetParameter(0)*1000.
     a1 = fun.GetParameter(1)*1000.
-    txt = '1000*f = {a0:.1f} + {a1:.1f}/pt'.format(a0=a0, a1=a1)
+    txt = 'f = #left( {a0:.1f} + #frac{{ {a1:.1f} }}{{ P_{{T}} }} #right) #mu m'.format(a0=a0, a1=a1)
     # txt = 'Sigma='+'%4.1f' % (a0)+'+'+'%4.1f' % (a1)+'/pt'
-    tx = TText(0.25, 0.07, txt)
-    tx.DrawText(0.25, 0.07, txt)
+    tx = TLatex(0.25, 0.07, txt)
+    tx.DrawLatex(0.25, 0.07, txt)
     c1.Print(filename+'resolution.png')
 
 

@@ -19,10 +19,10 @@ brunel_dir = join(os.environ['HOME'], 'cmtuser', 'BrunelDev_v51r1')
 if not isdir(brunel_dir):
     brunel = prepareGaudiExec('Brunel', 'v51r1')
 
-# Add Brunel to cmtuser if needed
-davinci_dir = join(os.environ['HOME'], 'cmtuser', 'DaVinciDev_v41r2')
-if not isdir(davinci_dir):
-    brunel = prepareGaudiExec('DaVinci', 'v41r2')
+# Add Panoramix to cmtuser if needed
+panoramix_dir = join(os.environ['HOME'], 'cmtuser', 'PanoramixDev_v23r2p2')
+if not isdir(panoramix_dir):
+    brunel = prepareGaudiExec('Panoramix', 'v23r2p2')
 
 # Configure Brunel
 brunel = GaudiExec()
@@ -34,10 +34,11 @@ brunel.options = [
     'brunel_options.py'
 ]
 
-# Configure DaVinci
-davinci = GaudiExec()
-davinci.directory = davinci_dir
-davinci.options = ['davinci_options.py']
+# Configure panoramix
+panoramix = GaudiExec()
+panoramix.directory = panoramix_dir
+panoramix.useGaudiRun = False
+panoramix.options = ['panoramix_options.py']
 
 # Make the LHCbTransform for brunel
 brunel_transform = LHCbTransform(
@@ -51,19 +52,19 @@ task.appendTransform(brunel_transform)
 bk_query = BKQuery(path=BOOKEEPING_PATH)
 brunel_transform.addInputData(bk_query.getDataset())
 
-# Make the LHCbTransform for davinci
-davinci_transform = LHCbTransform(
-    name='DaVinci',
-    application=davinci,
+# Make the LHCbTransform for panoramix
+panoramix_transform = LHCbTransform(
+    name='Panoramix',
+    application=panoramix,
     splitter=SplitByFiles(filesPerJob=1),
-    outputfiles=[DiracFile('*.root')],
+    outputfiles=[LocalFile('*.root'), LocalFile('*.png')],
 )
-task.appendTransform(davinci_transform)
+task.appendTransform(panoramix_transform)
 
 d = TaskChainInput()
 d.include_file_mask = ['\.(mdst|dst|gen|digi|sim|xdst)$']
 d.input_trf_id = brunel_transform.getID()
-davinci_transform.addInputData(d)
+panoramix_transform.addInputData(d)
 
 for transform in task.transforms:
     transform.backend = Dirac()

@@ -4,6 +4,8 @@ from __future__ import print_function
 
 from math import sqrt
 
+import pandas as pd
+
 from ROOT import (
     TFile, TCanvas, TH1F, TH2F, gROOT, TF1, gStyle, TText, Double
 )
@@ -20,14 +22,76 @@ MCParticle = GaudiPython.gbl.LHCb.MCParticle
 Track = GaudiPython.gbl.LHCb.Track
 Range = GaudiPython.gbl.std.pair('double', 'double')
 
+files = [
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917952/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917957/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917961/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917972/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917978/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917983/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917987/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917991/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917993/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917996/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917943/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917950/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917953/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917958/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917962/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917974/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917979/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917982/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917986/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917989/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917954/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917959/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917963/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917975/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917977/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917981/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917985/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917990/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917994/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917997/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917936/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917937/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917938/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917939/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917940/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917941/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917942/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917948/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917951/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917955/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917956/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917960/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917973/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917976/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917980/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917984/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917988/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917992/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917995/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917998/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918016/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918031/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918040/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918054/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918067/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918077/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918091/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918100/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918112/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153918/153918129/Brunel.xdst',
+    'root://eoslhcb.cern.ch//eos/lhcb/grid/user/lhcb/user/c/cburr/2017_02/153917/153917999/Brunel.xdst'
+]
+
 
 def run_script():
     optSlope = 6
 
     slopemin = [0,     0.025, 0.05,  0.075, 0.1,   0.125,  0]
     slopemax = [0.025, 0.05,  0.075, 0.1,   0.125, 0.15,  10.]
-
-    files = ['/afs/cern.ch/work/c/cburr/Brunel.xdst']
 
     lhcbApp.DataType = 'Upgrade'
     lhcbApp.setProp(
@@ -38,6 +102,8 @@ def run_script():
 
     IOHelper('ROOT').inputFiles(files)
     addDBTags(files[0])
+    # lhcbApp.DDDBtag = 'dddb-20160304'
+    # lhcbApp.CondDBtag = 'sim-20150716-vc-md100'
 
     ConfiguredMasterFitter("TrackMasterFitter")
     ApplicationMgr(OutputLevel=INFO, AppName='IPandPresol')
@@ -61,6 +127,15 @@ def run_script():
     p_sy = TH2F('p_sy', 'pull res slope y for long tracks vs. p', 25, 0., 150., 100, -5.0, 5.0)
     h_pmc = TH2F('h_pmc', 'p mc vs p rec ', 25, 0., 150.,  25, 0., 150.)
     h_firstHit = TH1F('h_firstHit', ' r of first measured point', 100, 0.0, 50.0)
+
+    df = pd.DataFrame(columns=[
+        'true_pid', 'track_type', 'true_rho',
+        'true_p', 'true_pt', 'true_px', 'true_py', 'true_pz',
+        'reco_p', 'reco_pt',
+        'true_vertex_x', 'true_vertex_y', 'true_vertex_z',
+        'reco_vertex_x', 'reco_vertex_xerr', 'reco_vertex_y', 'reco_vertex_yerr', 'reco_vertex_z',
+        'reco_slope_x', 'reco_slope_xerr', 'reco_slope_y', 'reco_slope_yerr', 'reco_slope_errQOverP2'
+    ])
 
     poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
     extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
@@ -125,6 +200,19 @@ def run_script():
             ipy = p_ontrack.y()-mc_vertex.y()
             ipz = p_ontrack.z()-mc_vertex.z()
 
+            df.loc[len(df)] = (
+                mc_particle.particleID().pid(), int(track.type()), pos.rho(),
+                true_momentum.P(), true_momentum.pt(),
+                true_momentum.px(), true_momentum.py(), true_momentum.pz(),
+                track.p(), track.pt(),
+                mc_vertex.x(), mc_vertex.y(), mc_vertex.z(),
+                p_ontrack.x(), sqrt(astate.errX2()),
+                p_ontrack.y(), sqrt(astate.errY2()),
+                p_ontrack.z(),
+                astate.tx(), sqrt(astate.errTx2()), astate.ty(), sqrt(astate.errTy2()),
+                sqrt(astate.errQOverP2())
+            )
+
             # Fill histograms
             h_IP.Fill(one_over_pt, ip)
             h_IPx.Fill(one_over_pt, ipx)
@@ -143,6 +231,8 @@ def run_script():
             p_IPy.Fill(one_over_pt, ipy/sqrt(astate.errY2()))
             p_sx.Fill(true_p/1000., delsx/sqrt(astate.errTx2()))
             p_sy.Fill(true_p/1000., delsy/sqrt(astate.errTy2()))
+
+    df.to_json('VeloPix_studies.json')
 
     tcp = TCanvas('tcp', 'momentum resolution', 750, 500)
     tcp.Divide(1, 1)
@@ -184,6 +274,12 @@ def run_script():
     f = TFile('VeloPix_studies.root', 'recreate')
     for obj in gROOT.GetList():
         obj.Write()
+    for obj in gROOT.GetListOfCanvases():
+        obj.Write()
+    gROOT.FindObjectAny('h_P_0').Write()
+    gROOT.FindObjectAny('h_P_1').Write()
+    gROOT.FindObjectAny('h_P_2').Write()
+    gROOT.FindObjectAny('h_P_chi2').Write()
     f.Close()
 
 

@@ -12,9 +12,13 @@ try:
 except SystemError:
     pass
 
-
+# Don't try to display any TCanvases
 R.gROOT.SetBatch(True)
-# R.gROOT.ProcessLine(".x lhcbstyle.C")
+# Don't draw titles
+# R.gStyle.SetOptTitle(0)
+# R.gStyle.SetLegendTextSize(0.05)
+R.gROOT.ProcessLine(".x lhcbstyle.C")
+
 base_dir = '.'
 
 files = [
@@ -29,7 +33,6 @@ figs = {
         'path': "IPxVsInvTruePtH2_2",
         'xlabel': "1/#it{p}_{T} [GeV^{-1}#it{c}]",
         'ylabel': "IP_{x} resolution [#mum]",
-        'ylabeloffset': 1.002,
     },
     "IPy": {
         'path': "IPyVsInvTruePtH2_2",
@@ -40,44 +43,36 @@ figs = {
         'path': "IP3DVsInvTruePtH2_pfx",
         'xlabel': "1/#it{p}_{T} [GeV^{-1}#it{c}]",
         'ylabel': "IP_{3D} resolution [#mum]",
-        'ylabeloffset': 1.05,
      },
     "PVx": {
         'path': "TrackIPResolutionChecker/PV/dxH1",
         'xlabel': "#it{x}_{PV} - #it{x}_{PV,true} [mm]",
         'ylabel': "Normalised",
-        'ylabeloffset': 1.18,
     },
     "PVy": {
         'path': "TrackIPResolutionChecker/PV/dyH1",
         'xlabel': "#it{y}_{PV} - #it{y}_{PV,true} [mm]",
         'ylabel': "Normalised",
-        'ylabeloffset': 1.13,
     },
     "PVz": {
         'path': "TrackIPResolutionChecker/PV/dzH1",
         'xlabel': "#it{z}_{PV} - #it{z}_{PV,true} [mm]",
         'ylabel': "Normalised",
-        'ylabeloffset': 1.18,
     },
     "PVxNtrk": {
         'path': "TrackIPResolutionChecker/PV/PVXResolutionVsNTrk",
-        # 'path': "dxVersusNTrk_2",
         'xlabel': "Number of tracks",
         'ylabel': "Average resolution [#mum]",
     },
     "PVyNtrk": {
         'path': "TrackIPResolutionChecker/PV/PVYResolutionVsNTrk",
-        # 'path': "dyVersusNTrk_2",
         'xlabel': "Number of tracks",
         'ylabel': "Average resolution [#mum]",
     },
     "PVzNtrk": {
         'path': "TrackIPResolutionChecker/PV/PVZResolutionVsNTrk",
-        # 'path': "dzVersusNTrk_2",
         'xlabel': "Number of tracks",
         'ylabel': "Average resolution [#mum]",
-        'ylabeloffset': 1.1,
     },
 }
 
@@ -142,21 +137,11 @@ def make_resolution_plots():
                 print("mm to micron for:", name)
                 h.Scale(1000)
 
-            maxy = 100
-            if prefix.startswith("Massi"):
-                maxy = 60
-
             if "IP3D" in name:
-                if "zoom" in prefix:
-                    h.GetYaxis().SetRangeUser(15, 75)
-                else:
-                    h.GetYaxis().SetRangeUser(0, maxy)  # 160)
+                h.GetYaxis().SetRangeUser(0, 160)
 
-            if ("IPx" in name) or ("IPy" in name):
-                if "zoom" in prefix:
-                    h.GetYaxis().SetRangeUser(10, 55)
-                else:
-                    h.GetYaxis().SetRangeUser(0, maxy)
+            if "IPx" in name or "IPy" in name:
+                h.GetYaxis().SetRangeUser(0, 100)
 
             if name.startswith("IP"):
                 print("Now fitting:", name)
@@ -189,53 +174,34 @@ def make_resolution_plots():
 
             plots[name].append(h)
 
-    c = R.TCanvas("wer", "wie was", 615, 615)
-    c.SetLeftMargin(0.16)
-    c.SetTopMargin(0.03)
+    c = R.TCanvas("wer", "wie was", 750, 500)
     for name, figs_ in plots.items():
-        c.Clear()
-        if not figs_:
-            print("Skipping:", name)
-            continue
-
+        figs_[0].SetStats(0)
         figs_[0].Draw()
-        if "Ntrk" in name:
-            leg = R.TLegend(0.6, 0.6, 0.9, 0.85)
-        else:
-            leg = R.TLegend(0.18, 0.7, 0.6, 0.88)
 
-        leg.SetFillColor(0)
+        leg_x, leg_y = 0.6, 0.2
+        leg_w, leg_h = 0.25, 0.15
+        if "Ntrk" in name or "PV" in name:
+            leg_x, leg_y = 0.6, 0.6
+
+        leg = R.TLegend(leg_x, leg_y, leg_x+leg_w, leg_y+leg_h)
+        leg.SetFillColorAlpha(0, 0)
+        leg.SetLineColorAlpha(0, 0)
 
         leg.AddEntry(figs_[0], figs_[0].GetTitle())
-
-        # Draw 1/pT distribution of tracks
-        if "IP" in name:
-            key = "InvPt"
-            if key in plots:
-                h = plots[key][0].Clone()
-                h.SetLineColor(R.kGray+1)
-                h.Scale(220/3)
-                h.Draw("same hist")
-
-        if name in figs and "ylabeloffset" in figs[name]:
-            figs_[0].GetYaxis().SetTitleOffset(figs[name]['ylabeloffset'])
 
         for f in figs_[1:]:
             f.Draw("same")
             leg.AddEntry(f, f.GetTitle())
 
-        stamp = R.TLatex(0.20, 0.90, "LHCb simulation")
-        stamp.SetNDC(True)
-        stamp.Draw()
+        R.TLatex().DrawLatexNDC(0.20, 0.80, "LHCb simulation")
         c.RedrawAxis()
         leg.Draw()
 
         # c.SaveAs(prefix + name + ".pdf")
         c.SaveAs(prefix + name + ".png")
 
-    for (fname, colour, title) in files:
-        f = R.TFile(fname)
-        f.Close()
+    map(R.TFile.Close, open_files)
 
 
 if __name__ == '__main__':

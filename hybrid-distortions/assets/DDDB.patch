@@ -1,0 +1,56 @@
+diff --git a/UVP/Structure/Module.xml b/UVP/Structure/Module.xml
+index 7bdb883..17e0e96 100644
+--- a/UVP/Structure/Module.xml
++++ b/UVP/Structure/Module.xml
+@@ -2,6 +2,7 @@
+   <detelem name = "Module&ModNum;WithSupport">
+     <geometryinfo lvname  = "/dd/Geometry/BeforeMagnetRegion/VP/Modules/lvModule&ModNum;WithSupport"
+                   support = "/dd/Structure/LHCb/BeforeMagnetRegion/VP/VP&Left;"
++                  condition = "/dd/Conditions/Alignment/VP/Module&ModNum;"
+                   npath   = "pvModule&ModNum;WithSupport"/>
+     <detelemref href = "#Module&ModNum;"/>
+   </detelem>
+diff --git a/UVP/Structure/VPHalves.xml b/UVP/Structure/VPHalves.xml
+index aee4c52..d351077 100644
+--- a/UVP/Structure/VPHalves.xml
++++ b/UVP/Structure/VPHalves.xml
+@@ -7,6 +7,7 @@
+     <author>Victor Coco</author>
+     <version>1.0</version>
+     <geometryinfo lvname = "/dd/Geometry/BeforeMagnetRegion/VP/lvVPLeft"
++                  condition = "/dd/Conditions/Alignment/VP/VPLeft"
+                   support = "/dd/Structure/LHCb/BeforeMagnetRegion/VP"
+                   npath = "pvVPLeft"/>
+     <detelemref href = "M00.xml#Module00WithSupport"/>
+@@ -43,6 +44,7 @@
+     <version>1.0</version>
+     <geometryinfo lvname = "/dd/Geometry/BeforeMagnetRegion/VP/lvVPRight"
+                   support = "/dd/Structure/LHCb/BeforeMagnetRegion/VP"
++                  condition = "/dd/Conditions/Alignment/VP/VPRight"
+                   npath = "pvVPRight"/>
+     <detelemref href = "M01.xml#Module01WithSupport"/>
+     <detelemref href = "M03.xml#Module03WithSupport"/>
+diff --git a/UVP/structure.xml b/UVP/structure.xml
+index e72dcaf..e7a238b 100644
+--- a/UVP/structure.xml
++++ b/UVP/structure.xml
+@@ -12,6 +12,7 @@
+     <author>Victor Coco</author>
+     <version>1.0</version>
+     <geometryinfo lvname = "/dd/Geometry/BeforeMagnetRegion/VP/lvVP"
++                  condition = "/dd/Conditions/Alignment/VP/VPSystem"
+                   support = "/dd/Structure/LHCb/BeforeMagnetRegion"
+                   npath = "VertexSubsystem"/>
+     <userParameter name="sensitiveVolumeCut" type="double">5.0*mm</userParameter>
+diff --git a/VP/DetElem/ModulePixel.xml b/VP/DetElem/ModulePixel.xml
+index 2fe571e..c7368e6 100644
+--- a/VP/DetElem/ModulePixel.xml
++++ b/VP/DetElem/ModulePixel.xml
+@@ -7,6 +7,7 @@
+     <version> 1.0 </version>
+     <geometryinfo lvname ="/dd/Geometry/BeforeMagnetRegion/VP/PixelModules/lvVPModule&ModNum;"
+       support="/dd/Structure/LHCb/BeforeMagnetRegion/VP/VP&Left;"
++      condition = "/d/Conditions/Alignment/VP/Module&ModNum;"
+       npath  ="pvModulePix&ModNum;"/>
+     <detelemref  href="#Sensor-&Type;"/>
+   </detelem>

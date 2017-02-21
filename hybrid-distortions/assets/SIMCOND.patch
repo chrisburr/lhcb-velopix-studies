@@ -1,0 +1,382 @@
+diff --git a/Conditions/MainCatalog.xml b/Conditions/MainCatalog.xml
+index d94cc13..38e6c91 100644
+--- a/Conditions/MainCatalog.xml
++++ b/Conditions/MainCatalog.xml
+@@ -18,6 +18,7 @@
+ 
+   <catalog name="Alignment">
+     <catalogref href = "LHCb/AlignmentCatalog.xml#LHCb"/>
++    <catalogref href = "VP/AlignmentCatalog.xml#VP"/>
+     <catalogref href = "Velo/AlignmentCatalog.xml#Velo"/>
+     <catalogref href = "VeloLite/AlignmentCatalog.xml#VeloLite"/>
+     <catalogref href = "TT/AlignmentCatalog.xml#TT"/>
+diff --git a/Conditions/VP/Alignment/Global.xml b/Conditions/VP/Alignment/Global.xml
+new file mode 100644
+index 0000000..c0b82fa
+--- /dev/null
++++ b/Conditions/VP/Alignment/Global.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<!DOCTYPE DDDB SYSTEM "../../../DTD/structure.dtd">
++<DDDB>
++
++  <condition classID="6" name="VPSystem">
++    <paramVector name="dPosXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector name="dRotXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="1008106" name="VPLeft">
++    <paramVector name="dPosXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector name="dRotXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="1008106" name="VPRight">
++    <paramVector name="dPosXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector name="dRotXYZ" type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++</DDDB>
+diff --git a/Conditions/VP/Alignment/Modules.xml b/Conditions/VP/Alignment/Modules.xml
+new file mode 100644
+index 0000000..6f7251c
+--- /dev/null
++++ b/Conditions/VP/Alignment/Modules.xml
+@@ -0,0 +1,265 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<!DOCTYPE DDDB SYSTEM "../../../DTD/structure.dtd">
++<DDDB>
++
++  <condition classID="6"  name="Module00">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module01">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module02">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module03">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module04">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module05">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module06">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module07">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module08">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module09">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module10">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module11">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module12">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module13">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module14">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module15">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module16">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module17">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module18">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module19">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module20">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module21">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module22">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module23">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module24">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module25">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module26">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module27">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module28">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module29">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module30">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module31">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module32">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module33">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module34">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module35">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module36">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module37">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module38">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module39">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module40">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module41">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module42">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module43">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module44">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module45">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module46">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module47">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module48">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module49">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module50">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++  <condition classID="6"  name="Module51">
++    <paramVector  name="dPosXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++    <paramVector  name="dRotXYZ"  type="double"> 0.0 0.0 0.0 </paramVector>
++  </condition>
++
++</DDDB>
+diff --git a/Conditions/VP/AlignmentCatalog.xml b/Conditions/VP/AlignmentCatalog.xml
+new file mode 100644
+index 0000000..dfd5a3d
+--- /dev/null
++++ b/Conditions/VP/AlignmentCatalog.xml
+@@ -0,0 +1,67 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<!DOCTYPE DDDB SYSTEM "../../DTD/structure.dtd">
++<DDDB>
++  <catalog name ="VP">
++    <conditionref href="Alignment/Global.xml#VPSystem"/>
++    <conditionref href="Alignment/Global.xml#VPRight"/>
++    <conditionref href="Alignment/Global.xml#VPLeft"/>
++
++    <conditionref href="Alignment/Modules.xml#ModulePU00"/>
++    <conditionref href="Alignment/Modules.xml#ModulePU01"/>
++    <conditionref href="Alignment/Modules.xml#ModulePU02"/>
++    <conditionref href="Alignment/Modules.xml#ModulePU03"/>
++    <conditionref href="Alignment/Modules.xml#Module00"/>
++    <conditionref href="Alignment/Modules.xml#Module01"/>
++    <conditionref href="Alignment/Modules.xml#Module02"/>
++    <conditionref href="Alignment/Modules.xml#Module03"/>
++    <conditionref href="Alignment/Modules.xml#Module04"/>
++    <conditionref href="Alignment/Modules.xml#Module05"/>
++    <conditionref href="Alignment/Modules.xml#Module06"/>
++    <conditionref href="Alignment/Modules.xml#Module07"/>
++    <conditionref href="Alignment/Modules.xml#Module08"/>
++    <conditionref href="Alignment/Modules.xml#Module09"/>
++    <conditionref href="Alignment/Modules.xml#Module10"/>
++    <conditionref href="Alignment/Modules.xml#Module11"/>
++    <conditionref href="Alignment/Modules.xml#Module12"/>
++    <conditionref href="Alignment/Modules.xml#Module13"/>
++    <conditionref href="Alignment/Modules.xml#Module14"/>
++    <conditionref href="Alignment/Modules.xml#Module15"/>
++    <conditionref href="Alignment/Modules.xml#Module16"/>
++    <conditionref href="Alignment/Modules.xml#Module17"/>
++    <conditionref href="Alignment/Modules.xml#Module18"/>
++    <conditionref href="Alignment/Modules.xml#Module19"/>
++    <conditionref href="Alignment/Modules.xml#Module20"/>
++    <conditionref href="Alignment/Modules.xml#Module21"/>
++    <conditionref href="Alignment/Modules.xml#Module22"/>
++    <conditionref href="Alignment/Modules.xml#Module23"/>
++    <conditionref href="Alignment/Modules.xml#Module24"/>
++    <conditionref href="Alignment/Modules.xml#Module25"/>
++    <conditionref href="Alignment/Modules.xml#Module26"/>
++    <conditionref href="Alignment/Modules.xml#Module27"/>
++    <conditionref href="Alignment/Modules.xml#Module28"/>
++    <conditionref href="Alignment/Modules.xml#Module29"/>
++    <conditionref href="Alignment/Modules.xml#Module30"/>
++    <conditionref href="Alignment/Modules.xml#Module31"/>
++    <conditionref href="Alignment/Modules.xml#Module32"/>
++    <conditionref href="Alignment/Modules.xml#Module33"/>
++    <conditionref href="Alignment/Modules.xml#Module34"/>
++    <conditionref href="Alignment/Modules.xml#Module35"/>
++    <conditionref href="Alignment/Modules.xml#Module36"/>
++    <conditionref href="Alignment/Modules.xml#Module37"/>
++    <conditionref href="Alignment/Modules.xml#Module38"/>
++    <conditionref href="Alignment/Modules.xml#Module39"/>
++    <conditionref href="Alignment/Modules.xml#Module40"/>
++    <conditionref href="Alignment/Modules.xml#Module41"/>
++    <conditionref href="Alignment/Modules.xml#Module42"/>
++    <conditionref href="Alignment/Modules.xml#Module43"/>
++    <conditionref href="Alignment/Modules.xml#Module44"/>
++    <conditionref href="Alignment/Modules.xml#Module45"/>
++    <conditionref href="Alignment/Modules.xml#Module46"/>
++    <conditionref href="Alignment/Modules.xml#Module47"/>
++    <conditionref href="Alignment/Modules.xml#Module48"/>
++    <conditionref href="Alignment/Modules.xml#Module49"/>
++    <conditionref href="Alignment/Modules.xml#Module50"/>
++    <conditionref href="Alignment/Modules.xml#Module51"/>
++
++  </catalog>
++</DDDB>

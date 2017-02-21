@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import defaultdict
+from glob import glob
 from os.path import join
 
 import ROOT as R
@@ -21,8 +22,7 @@ R.gROOT.ProcessLine(".x lhcbstyle.C")
 base_dir = '.'
 
 files = [
-    (join(base_dir, '154464562/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
-    (join(base_dir, '154465308/Brunel-histos.root'), (R.kRed, 20), "Also nominal"),
+    (join(base_dir, '*/Brunel-histos.root'), (R.kBlack, 20), "Nominal")
 ]
 
 prefix = 'plots/'
@@ -83,7 +83,6 @@ figs = {
 
 def get_plot(fname, colour, marker, title):
     f = R.TFile(fname)
-    print("File:", fname)
 
     # For each file take the 2D histogram and fit it to create
     # the histogram containing the mean of the 3D difference
@@ -106,12 +105,8 @@ def get_plot(fname, colour, marker, title):
     PVy_vs_Ntrk.FitSlicesY()
 
     for name, opts in figs.items():
-        print("****", name)
         h = f.Get(opts['path'])
-
-        if not h:
-            print(">>>", name, "not found")
-            continue
+        assert h
 
         h.GetXaxis().SetTitle(opts['xlabel'])
         h.GetYaxis().SetTitle(opts['ylabel'])
@@ -122,17 +117,9 @@ def get_plot(fname, colour, marker, title):
 
         # turn mm into micron on y axis
         if "IP" in name or "Ntrk" in name:
-            print("mm to micron for:", name)
             h.Scale(1000)
 
-        if "IP3D" in name:
-            h.GetYaxis().SetRangeUser(0, 160)
-
-        if "IPx" in name or "IPy" in name:
-            h.GetYaxis().SetRangeUser(0, 100)
-
         if name.startswith("IP"):
-            print("Now fitting:", name)
             hist = R.TF1(
                 fname.replace(".", "_")+"_"+str(name),
                 "pol1",
@@ -142,23 +129,13 @@ def get_plot(fname, colour, marker, title):
             hist.SetLineColor(colour)
             h.Fit(hist)
             hist.SetLineColor(colour)
-            print("Done.")
-            print()
-
-        if "Ntrk" in name:
-            h.GetYaxis().SetRangeUser(0, 30)
-
-        if "PVzNtrk" in name:
-            h.GetYaxis().SetRangeUser(0, 170)
 
         if name in ("PVx", "PVy", "PVz"):
             h.Rebin(2)
             h.Scale(1./h.Integral())
-            h.GetYaxis().SetRangeUser(0, 0.08*2)
 
         if "InvPt" in name:
             h.Scale(1./h.Integral())
-            h.GetYaxis().SetRangeUser(0, 0.08*2)
 
         h.SetDirectory(0)
         yield name, h
@@ -166,10 +143,19 @@ def get_plot(fname, colour, marker, title):
 
 def make_resolution_plots():
     plots = defaultdict(list)
-    # We have to keep references to any files we open to prevent ROOT from closing them
-
     for (fname, (colour, marker), title) in files:
-        for name, h in get_plot(fname, colour, marker, title):
+        # Average the matching histograms together
+        _plots = {}
+        for _fname in glob(fname):
+            for name, h in get_plot(_fname, colour, marker, title):
+                h.SetBit(R.TH1.kIsAverage)
+                if name in _plots:
+                    _plots[name].Add(h)
+                else:
+                    _plots[name] = h
+        # Add the averaged histograms to the main dictionary
+        for name, h in _plots.items():
+            set_hist_range(name, h)
             plots[name].append(h)
 
     c = R.TCanvas("wer", "wie was", 750, 500)
@@ -198,6 +184,26 @@ def make_resolution_plots():
 
         # c.SaveAs(prefix + name + ".pdf")
         c.SaveAs(prefix + name + ".png")
+
+
+def set_hist_range(name, hist):
+    if "IP3D" in name:
+        hist.GetYaxis().SetRangeUser(0, 160)
+
+    if "IPx" in name or "IPy" in name:
+        hist.GetYaxis().SetRangeUser(0, 100)
+
+    if "Ntrk" in name:
+        hist.GetYaxis().SetRangeUser(0, 30)
+
+    if "PVzNtrk" in name:
+        hist.GetYaxis().SetRangeUser(0, 170)
+
+    if name in ("PVx", "PVy", "PVz"):
+        hist.GetYaxis().SetRangeUser(0, 0.08*2)
+
+    if "InvPt" in name:
+        hist.GetYaxis().SetRangeUser(0, 0.08*2)
 
 
 if __name__ == '__main__':

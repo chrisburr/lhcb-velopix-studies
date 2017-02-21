@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse
 import shutil
 import os
+from os.path import basename, dirname
 
 import GaudiPython
 
@@ -48,9 +49,11 @@ if __name__ == '__main__':
     parser.add_argument('--alignment-db', required=True)
     db = parser.parse_args().alignment_db
 
-    shutil.copy(db, 'alignment_SIMCOND.db')
-    output_fn = db[len('SIMCOND_'):-3] + '_positions.txt'
+    shutil.copy('output/DDDB.db', 'check_positions/Alignment_SIMCOND.db')
+    shutil.copy('output/SIMCOND.db', 'check_positions/Alignment_SIMCOND.db')
+    shutil.copy(db, 'Alignment_SIMCOND.db')
+    output_fn = basename(dirname(db)) + '_positions.txt'
 
-    store_module_positions('AlignVeloTest_Upgrade.py', output_fn)
+    store_module_positions('check_positions/options.py', output_fn)
 
-    os.remove('alignment_SIMCOND.db')
+    os.remove('Alignment_SIMCOND.db')

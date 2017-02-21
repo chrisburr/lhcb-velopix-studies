@@ -81,96 +81,95 @@ figs = {
 # == TDR vs A vs B
 
 
+def get_plot(fname, colour, marker, title):
+    f = R.TFile(fname)
+    print("File:", fname)
+
+    # For each file take the 2D histogram and fit it to create
+    # the histogram containing the mean of the 3D difference
+    # as function of inverse pT
+    ip3d_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IP3DVsInvTruePtH2")
+    ip3d_vs_invpt.ProfileX()
+    ip3d_vs_invpt.FitSlicesY()
+
+    ipx_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IPxVsInvTruePtH2")
+    ipx_vs_invpt.FitSlicesY()
+
+    ipy_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IPyVsInvTruePtH2")
+    ipy_vs_invpt.FitSlicesY()
+
+    PVx_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dxVersusNTrk")
+    PVy_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dyVersusNTrk")
+    PVz_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dzVersusNTrk")
+    PVx_vs_Ntrk.FitSlicesY()
+    PVz_vs_Ntrk.FitSlicesY()
+    PVy_vs_Ntrk.FitSlicesY()
+
+    for name, opts in figs.items():
+        print("****", name)
+        h = f.Get(opts['path'])
+
+        if not h:
+            print(">>>", name, "not found")
+            continue
+
+        h.GetXaxis().SetTitle(opts['xlabel'])
+        h.GetYaxis().SetTitle(opts['ylabel'])
+        h.SetLineColor(colour)
+        h.SetMarkerColor(colour)
+        h.SetMarkerStyle(marker)
+        h.SetTitle(title)
+
+        # turn mm into micron on y axis
+        if "IP" in name or "Ntrk" in name:
+            print("mm to micron for:", name)
+            h.Scale(1000)
+
+        if "IP3D" in name:
+            h.GetYaxis().SetRangeUser(0, 160)
+
+        if "IPx" in name or "IPy" in name:
+            h.GetYaxis().SetRangeUser(0, 100)
+
+        if name.startswith("IP"):
+            print("Now fitting:", name)
+            hist = R.TF1(
+                fname.replace(".", "_")+"_"+str(name),
+                "pol1",
+                h.GetXaxis().GetXmin(),
+                h.GetXaxis().GetXmax()
+            )
+            hist.SetLineColor(colour)
+            h.Fit(hist)
+            hist.SetLineColor(colour)
+            print("Done.")
+            print()
+
+        if "Ntrk" in name:
+            h.GetYaxis().SetRangeUser(0, 30)
+
+        if "PVzNtrk" in name:
+            h.GetYaxis().SetRangeUser(0, 170)
+
+        if name in ("PVx", "PVy", "PVz"):
+            h.Rebin(2)
+            h.Scale(1./h.Integral())
+            h.GetYaxis().SetRangeUser(0, 0.08*2)
+
+        if "InvPt" in name:
+            h.Scale(1./h.Integral())
+            h.GetYaxis().SetRangeUser(0, 0.08*2)
+
+        h.SetDirectory(0)
+        yield name, h
+
+
 def make_resolution_plots():
     plots = defaultdict(list)
     # We have to keep references to any files we open to prevent ROOT from closing them
-    open_files = []
 
-    for (fname, colour, title) in files:
-        if isinstance(colour, tuple):
-            colour, marker = colour
-        else:
-            marker = 20
-
-        f = R.TFile(fname)
-        open_files.append(f)
-        print("File:", fname)
-
-        # For each file take the 2D histogram and fit it to create
-        # the histogram containing the mean of the 3D difference
-        # as function of inverse pT
-        ip3d_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IP3DVsInvTruePtH2")
-        ip3d_vs_invpt.ProfileX()
-        ip3d_vs_invpt.FitSlicesY()
-
-        ipx_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IPxVsInvTruePtH2")
-        ipx_vs_invpt.FitSlicesY()
-
-        ipy_vs_invpt = f.Get("TrackIPResolutionChecker/IP/Velo/IPyVsInvTruePtH2")
-        ipy_vs_invpt.FitSlicesY()
-
-        PVx_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dxVersusNTrk")
-        PVy_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dyVersusNTrk")
-        PVz_vs_Ntrk = f.Get("TrackIPResolutionChecker/PV/dzVersusNTrk")
-        PVx_vs_Ntrk.FitSlicesY()
-        PVz_vs_Ntrk.FitSlicesY()
-        PVy_vs_Ntrk.FitSlicesY()
-
-        for name, opts in figs.items():
-            print("****", name)
-            h = f.Get(opts['path'])
-
-            if not h:
-                print(">>>", name, "not found")
-                continue
-
-            h.GetXaxis().SetTitle(opts['xlabel'])
-            h.GetYaxis().SetTitle(opts['ylabel'])
-            h.SetLineColor(colour)
-            h.SetMarkerColor(colour)
-            h.SetMarkerStyle(marker)
-            h.SetTitle(title)
-
-            # turn mm into micron on y axis
-            if "IP" in name or "Ntrk" in name:
-                print("mm to micron for:", name)
-                h.Scale(1000)
-
-            if "IP3D" in name:
-                h.GetYaxis().SetRangeUser(0, 160)
-
-            if "IPx" in name or "IPy" in name:
-                h.GetYaxis().SetRangeUser(0, 100)
-
-            if name.startswith("IP"):
-                print("Now fitting:", name)
-                hist = R.TF1(
-                    fname.replace(".", "_")+"_"+str(name),
-                    "pol1",
-                    h.GetXaxis().GetXmin(),
-                    h.GetXaxis().GetXmax()
-                )
-                hist.SetLineColor(colour)
-                h.Fit(hist)
-                hist.SetLineColor(colour)
-                print("Done.")
-                print()
-
-            if "Ntrk" in name:
-                h.GetYaxis().SetRangeUser(0, 30)
-
-            if "PVzNtrk" in name:
-                h.GetYaxis().SetRangeUser(0, 170)
-
-            if name in ("PVx", "PVy", "PVz"):
-                h.Rebin(2)
-                h.Scale(1./h.Integral())
-                h.GetYaxis().SetRangeUser(0, 0.08*2)
-
-            if "InvPt" in name:
-                h.Scale(1./h.Integral())
-                h.GetYaxis().SetRangeUser(0, 0.08*2)
-
+    for (fname, (colour, marker), title) in files:
+        for name, h in get_plot(fname, colour, marker, title):
             plots[name].append(h)
 
     c = R.TCanvas("wer", "wie was", 750, 500)
@@ -199,8 +198,6 @@ def make_resolution_plots():
 
         # c.SaveAs(prefix + name + ".pdf")
         c.SaveAs(prefix + name + ".png")
-
-    map(R.TFile.Close, open_files)
 
 
 if __name__ == '__main__':

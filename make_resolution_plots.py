@@ -15,8 +15,7 @@ except SystemError:
 # Don't try to display any TCanvases
 R.gROOT.SetBatch(True)
 # Don't draw titles
-# R.gStyle.SetOptTitle(0)
-# R.gStyle.SetLegendTextSize(0.05)
+R.gStyle.SetOptTitle(0)
 R.gROOT.ProcessLine(".x lhcbstyle.C")
 
 base_dir = '.'

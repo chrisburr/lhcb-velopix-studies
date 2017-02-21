@@ -1,6 +1,7 @@
 # [SublimeLinter flake8-max-line-length:100]
+from glob import glob
 import os
-from os.path import join, isdir
+from os.path import basename, dirname, isdir, join
 
 # Not needed but keeps flake8 happy
 from Ganga.GPI import (
@@ -10,7 +11,7 @@ from Ganga.GPI import (
 
 # Config
 BOOKEEPING_PATH = "/MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-Pythia8/Sim09a-Upgrade/27163002/XDIGI"  # NOQA
-RUN_LOCAL = False
+RUN_LOCAL = True
 
 
 def get_brunel(custom_db=False):
@@ -70,7 +71,7 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     if local:
         job.backend = Local()
         job.outputfiles = [LocalFile('*.xdst'), LocalFile('*.root')]
-        job.inputdata = dataset[:8]
+        job.inputdata = dataset[:1]
     else:
         job.backend = Dirac()
         job.outputfiles = [DiracFile('*.xdst'), DiracFile('*.root')]
@@ -81,8 +82,11 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     job.submit()
 
 
+# Submit a job using the nominal tags directly
 brunel = get_brunel(custom_db=False)
 submit_job(brunel, 'Original DB')
 
-# brunel = get_brunel(custom_db=True)
-# submit_job(brunel, 'Nominal', input_files=[])
+for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
+    scenario_name = basename(dirname(db))
+    brunel = get_brunel(custom_db=True)
+    submit_job(brunel, scenario_name, input_files=['output/DDDB.db', 'output/SIMCOND.db', db])

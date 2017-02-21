@@ -1,3 +1,4 @@
+# [SublimeLinter flake8-max-line-length:100]
 import os
 from os.path import join, isdir
 
@@ -8,47 +9,80 @@ from Ganga.GPI import (
 )
 
 # Config
-APPCONFIGOPTS = "/afs/cern.ch/lhcb/software/releases/DBASE/AppConfig/v3r312/options"  # NOQA
 BOOKEEPING_PATH = "/MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-Pythia8/Sim09a-Upgrade/27163002/XDIGI"  # NOQA
 RUN_LOCAL = False
 
-# Add Brunel to cmtuser if needed
-brunel_dir = join(os.environ['HOME'], 'cmtuser', 'BrunelDev_v51r1')
-if not isdir(brunel_dir):
-    brunel = prepareGaudiExec('Brunel', 'v51r1')
 
-# Configure Brunel
-brunel = GaudiExec()
-brunel.directory = brunel_dir
-brunel.options = [
-    join(APPCONFIGOPTS, 'Brunel/MC-WithTruth.py'),
-    join(APPCONFIGOPTS, 'Brunel/Brunel-Upgrade-Baseline-20150522.py'),
-    join(APPCONFIGOPTS, 'Brunel/xdst.py'),
-    'brunel_options.py'
-]
-brunel.extraOpts += '''
-from Configurables import Brunel
-Brunel().EvtMax = {evt_max}
-'''.format(evt_max=[-1, 1][RUN_LOCAL])
+def get_brunel(custom_db=False):
+    # Add Brunel to cmtuser if needed
+    brunel_dir = join(os.environ['HOME'], 'cmtuser', 'BrunelDev_v51r1')
+    if not isdir(brunel_dir):
+        brunel = prepareGaudiExec('Brunel', 'v51r1')
 
-# Configure the corresponding Job
-brunel_job = Job(
-    name='VP hybrid distortions',
-    comment='Nominal reconstruction'+['', ' (Local)'][RUN_LOCAL],
-    application=brunel,
-    splitter=SplitByFiles(filesPerJob=1, ignoremissing=True),
-    parallel_submit=True
-)
+    # Configure Brunel
+    brunel = GaudiExec()
+    brunel.directory = brunel_dir
+    brunel.options = [
+        'options/MC-WithTruth.py',
+        'options/Brunel-Upgrade-Baseline-20150522.py',
+        'options/xdst.py',
+        'options/brunel_options.py'
+    ]
 
-dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
+    if custom_db:
+        brunel.extraOpts = (
+            'from Configurables import CondDB'
+            'from Configurables import CondDBAccessSvc'
+            'CondDB().addLayer(dbFile="DDDB.db", dbName="DDDB")'
+            'CondDB().addLayer(dbFile="SIMCOND.db", dbName="SIMCOND")'
+            'alignment_conditions = CondDBAccessSvc("AlignmentConditions")'
+            'alignment_conditions.ConnectionString = "sqlite_file:Alignment_SIMCOND.db/SIMCOND"'
+            'CondDB().addLayer(alignment_conditions)'
+        )
+    else:
+        brunel.extraOpts = (
+            'from Configurables import Brunel\n'
+            'from Configurables import LHCbApp\n'
+            'LHCbApp().DDDBtag = "dddb-20160304"\n'
+            'LHCbApp().CondDBtag = "sim-20150716-vc-md100"\n'
+        )
 
-if RUN_LOCAL:
-    brunel_job.backend = Local()
-    brunel_job.outputfiles = [LocalFile('*.xdst'), LocalFile('*.root')]
-    brunel_job.inputdata = dataset[:8]
-else:
-    brunel_job.backend = Dirac()
-    brunel_job.outputfiles = [DiracFile('*.xdst'), DiracFile('*.root')]
-    brunel_job.inputdata = dataset
+    return brunel
 
-brunel_job.submit()
+
+def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
+    # Set EvtMax depending on if this is a local job
+    brunel_app.extraOpts += 'from Configurables import Brunel\n'
+    brunel_app.extraOpts += 'Brunel().EvtMax = {0}'.format(2*int(local)-1)
+
+    # Configure the corresponding Job
+    job = Job(
+        name='VP hybrid distortions',
+        comment='{reco_type} reconstruction {suffix}'
+                .format(reco_type=reco_type, suffix=['', '(local)'][local]),
+        application=brunel_app,
+        splitter=SplitByFiles(filesPerJob=1, ignoremissing=True),
+        parallel_submit=True
+    )
+
+    dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
+
+    if local:
+        job.backend = Local()
+        job.outputfiles = [LocalFile('*.xdst'), LocalFile('*.root')]
+        job.inputdata = dataset[:8]
+    else:
+        job.backend = Dirac()
+        job.outputfiles = [DiracFile('*.xdst'), DiracFile('*.root')]
+        job.inputdata = dataset
+
+    job.inputfiles = input_files or []
+
+    job.submit()
+
+
+brunel = get_brunel(custom_db=False)
+submit_job(brunel, 'Original DB')
+
+# brunel = get_brunel(custom_db=True)
+# submit_job(brunel, 'Nominal', input_files=[])

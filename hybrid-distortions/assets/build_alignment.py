@@ -4,9 +4,10 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
+from random import gauss
 from math import atan
 from os import makedirs
-from os.path import dirname, isdir
+from os.path import dirname, isdir, join
 
 
 HEADER = (
@@ -29,7 +30,11 @@ FOOTER = (
 )
 
 
-def make_global_xml(filename):
+def make_global_xml(basedir):
+    global_fn = join(basedir, 'SIMCOND/Conditions/VP/Alignment/Global.xml')
+    if not isdir(dirname(global_fn)):
+        makedirs(dirname(global_fn))
+
     xml = HEADER
     xml += MODULE.format(
         class_id=6, name='VPSystem',
@@ -47,39 +52,45 @@ def make_global_xml(filename):
         rx=0, ry=0, rz=0
     )
     xml += FOOTER
-    with open(filename, 'wt') as f:
+    with open(global_fn, 'wt') as f:
         f.write(xml)
 
 
-def make_modules_xml(filename, x_distortion, y_distortion):
+def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
+    modules_fn = join(basedir, 'SIMCOND/Conditions/VP/Alignment/Modules.xml')
+    if not isdir(dirname(basedir)):
+        makedirs(dirname(basedir))
+
     xml = HEADER
     for i in range(52):
         rx = atan(x_distortion / 100000)
+        if sigma > 0 and rx > 0:
+            rx = gauss(rx, sigma*rx)
+
         ry = atan(y_distortion / 100000)
+        if sigma > 0 and ry > 0:
+            ry = gauss(ry, sigma*ry)
+
         rz = 0
+
         xml += MODULE.format(
             class_id=6, name='Module{i:02d}'.format(i=i),
             tx=0, ty=0, tz=0,
             rx=rx, ry=ry, rz=rz
         )
     xml += FOOTER
-    with open(filename, 'wt') as f:
+    with open(modules_fn, 'wt') as f:
         f.write(xml)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Make the global and modules xml')
-    parser.add_argument('--global-fn')
-    parser.add_argument('--modules-fn')
+    parser.add_argument('--basedir')
     parser.add_argument('--x-distortion', type=float, default=0)
     parser.add_argument('--y-distortion', type=float, default=0)
+    parser.add_argument('--sigma', type=float, default=0)
 
     args = parser.parse_args()
 
-    if not isdir(dirname(args.global_fn)):
-        makedirs(dirname(args.global_fn))
-    make_global_xml(args.global_fn)
-
-    if not isdir(dirname(args.modules_fn)):
-        makedirs(dirname(args.modules_fn))
-    make_modules_xml(args.modules_fn, args.x_distortion, args.y_distortion)
+    make_global_xml(args.basedir)
+    make_modules_xml(args.basedir, args.x_distortion, args.y_distortion, args.sigma)

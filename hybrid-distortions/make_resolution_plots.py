@@ -22,10 +22,12 @@ R.gROOT.ProcessLine(".x assets/lhcbStyle.C")
 base_dir = 'output/scenarios'
 
 files = [
-    (join(base_dir, 'Nominal/hists.root'), (R.kBlack, 20), "Nominal"),
-    (join(base_dir, 'Original/hists.root'), (R.kRed, 20), "Original"),
+    (join(base_dir, 'tip_x=0_y=-10000um/hists.root'), (R.kOrange, 20), "tip_x=0_y=-10000um"),
+    (join(base_dir, 'tip_x=0_y=-1000um/hists.root'), (R.kCyan, 20), "tip_x=0_y=-1000um"),
+    (join(base_dir, 'tip_x=0_y=-100um/hists.root'), (R.kRed, 20), "tip_x=0_y=-100um"),
+    (join(base_dir, 'Original/hists.root'), (R.kBlack, 20), "Original"),
     (join(base_dir, 'tip_x=0_y=+100um/hists.root'), (R.kBlue, 20), "tip_x=0_y=+100um"),
-    (join(base_dir, 'tip_x=0_y=+1000um/hists.root'), (R.kYellow, 20), "tip_x=0_y=+1000um"),
+    (join(base_dir, 'tip_x=0_y=+1000um/hists.root'), (R.kYellow+3, 20), "tip_x=0_y=+1000um"),
     (join(base_dir, 'tip_x=0_y=+10000um/hists.root'), (R.kGreen+3, 20), "tip_x=0_y=+10000um"),
 ]
 

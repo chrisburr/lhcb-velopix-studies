@@ -13,6 +13,8 @@ from Ganga.GPI import (
 BOOKEEPING_PATH = "/MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-Pythia8/Sim09a-Upgrade/27163002/XDIGI"  # NOQA
 RUN_LOCAL = True
 
+dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
+
 
 def get_brunel(custom_db=False):
     # Add Brunel to cmtuser if needed
@@ -32,13 +34,13 @@ def get_brunel(custom_db=False):
 
     if custom_db:
         brunel.extraOpts = (
-            'from Configurables import CondDB'
-            'from Configurables import CondDBAccessSvc'
-            'CondDB().addLayer(dbFile="DDDB.db", dbName="DDDB")'
-            'CondDB().addLayer(dbFile="SIMCOND.db", dbName="SIMCOND")'
-            'alignment_conditions = CondDBAccessSvc("AlignmentConditions")'
-            'alignment_conditions.ConnectionString = "sqlite_file:Alignment_SIMCOND.db/SIMCOND"'
-            'CondDB().addLayer(alignment_conditions)'
+            'from Configurables import CondDB\n'
+            'from Configurables import CondDBAccessSvc\n'
+            'CondDB().addLayer(dbFile="DDDB.db", dbName="DDDB")\n'
+            'CondDB().addLayer(dbFile="SIMCOND.db", dbName="SIMCOND")\n'
+            'alignment_conditions = CondDBAccessSvc("AlignmentConditions")\n'
+            'alignment_conditions.ConnectionString = "sqlite_file:Alignment_SIMCOND.db/SIMCOND"\n'
+            'CondDB().addLayer(alignment_conditions)\n'
         )
     else:
         brunel.extraOpts = (
@@ -54,7 +56,7 @@ def get_brunel(custom_db=False):
 def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     # Set EvtMax depending on if this is a local job
     brunel_app.extraOpts += 'from Configurables import Brunel\n'
-    brunel_app.extraOpts += 'Brunel().EvtMax = {0}'.format(2*int(local)-1)
+    brunel_app.extraOpts += 'Brunel().EvtMax = 5'.format(2*int(local)-1)
 
     # Configure the corresponding Job
     job = Job(
@@ -65,8 +67,6 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
         splitter=SplitByFiles(filesPerJob=1, ignoremissing=True),
         parallel_submit=True
     )
-
-    dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
 
     if local:
         job.backend = Local()
@@ -89,4 +89,8 @@ submit_job(brunel, 'Original DB')
 for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
     scenario_name = basename(dirname(db))
     brunel = get_brunel(custom_db=True)
-    submit_job(brunel, scenario_name, input_files=['output/DDDB.db', 'output/SIMCOND.db', db])
+    submit_job(brunel, scenario_name, input_files=[
+        join(os.getcwd(), 'output/DDDB.db'),
+        join(os.getcwd(), 'output/SIMCOND.db'),
+        join(os.getcwd(), db)
+    ])

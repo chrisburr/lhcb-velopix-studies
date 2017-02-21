@@ -4,7 +4,7 @@ from __future__ import print_function
 import argparse
 import shutil
 import os
-from os.path import basename, dirname
+from os.path import dirname, join
 
 import GaudiPython
 
@@ -16,8 +16,10 @@ def get_ladders(i, det):
         .format(i=i, side=['Left', 'Right'][i % 2 == 1])
     )
     for ladder in det[module_key].childIDetectorElements():
-        point = GaudiPython.gbl.ROOT.Math.XYZPoint()
-        point.SetXYZ(0, 0, 0)
+        point = GaudiPython.gbl.ROOT.Math.XYZPoint(0, 0, 0)
+        point = ladder.geometry().toGlobal(point)
+        yield ladder.name(), point.x(), point.y(), point.z()
+        point = GaudiPython.gbl.ROOT.Math.XYZPoint(42.46, 14.08, 0)
         point = ladder.geometry().toGlobal(point)
         yield ladder.name(), point.x(), point.y(), point.z()
 
@@ -49,11 +51,17 @@ if __name__ == '__main__':
     parser.add_argument('--alignment-db', required=True)
     db = parser.parse_args().alignment_db
 
-    shutil.copy('output/DDDB.db', 'check_positions/Alignment_SIMCOND.db')
-    shutil.copy('output/SIMCOND.db', 'check_positions/Alignment_SIMCOND.db')
-    shutil.copy(db, 'Alignment_SIMCOND.db')
-    output_fn = basename(dirname(db)) + '_positions.txt'
+    output_fn = join(dirname(db), 'positions.txt')
 
-    store_module_positions('check_positions/options.py', output_fn)
+    shutil.copy('output/DDDB.db', 'check_positions/DDDB.db')
+    shutil.copy('output/SIMCOND.db', 'check_positions/SIMCOND.db')
+    shutil.copy(db, 'check_positions/Alignment_SIMCOND.db')
 
-    os.remove('Alignment_SIMCOND.db')
+    try:
+        store_module_positions('check_positions/options.py', output_fn)
+    finally:
+        os.remove('check_positions/DDDB.db')
+        os.remove('check_positions/SIMCOND.db')
+        os.remove('check_positions/Alignment_SIMCOND.db')
+        os.remove('Brunel-histos.root')
+        os.remove('Brunel.xdst')

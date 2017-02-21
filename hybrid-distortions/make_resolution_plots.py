@@ -17,7 +17,7 @@ except SystemError:
 R.gROOT.SetBatch(True)
 # Don't draw titles
 R.gStyle.SetOptTitle(0)
-R.gROOT.ProcessLine(".x lhcbstyle.C")
+R.gROOT.ProcessLine(".x assets/lhcbstyle.C")
 
 base_dir = '.'
 

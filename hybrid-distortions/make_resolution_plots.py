@@ -17,15 +17,19 @@ except SystemError:
 R.gROOT.SetBatch(True)
 # Don't draw titles
 R.gStyle.SetOptTitle(0)
-R.gROOT.ProcessLine(".x assets/lhcbstyle.C")
+R.gROOT.ProcessLine(".x assets/lhcbStyle.C")
 
-base_dir = '.'
+base_dir = 'output/scenarios'
 
 files = [
-    (join(base_dir, '*/Brunel-histos.root'), (R.kBlack, 20), "Nominal")
+    (join(base_dir, 'Nominal/hists.root'), (R.kBlack, 20), "Nominal"),
+    (join(base_dir, 'Original/hists.root'), (R.kRed, 20), "Original"),
+    (join(base_dir, 'tip_x=0_y=+100um/hists.root'), (R.kBlue, 20), "tip_x=0_y=+100um"),
+    (join(base_dir, 'tip_x=0_y=+1000um/hists.root'), (R.kYellow, 20), "tip_x=0_y=+1000um"),
+    (join(base_dir, 'tip_x=0_y=+10000um/hists.root'), (R.kGreen+3, 20), "tip_x=0_y=+10000um"),
 ]
 
-prefix = 'plots/'
+prefix = 'output/plots/'
 
 figs = {
     "IPx": {
@@ -106,6 +110,7 @@ def get_plot(fname, colour, marker, title):
 
     for name, opts in figs.items():
         h = f.Get(opts['path'])
+        print(name, fname, opts['path'], h)
         assert h
 
         h.GetXaxis().SetTitle(opts['xlabel'])

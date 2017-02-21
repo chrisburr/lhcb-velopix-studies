@@ -11,7 +11,7 @@ from Ganga.GPI import (
 
 # Config
 BOOKEEPING_PATH = "/MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-Pythia8/Sim09a-Upgrade/27163002/XDIGI"  # NOQA
-RUN_LOCAL = True
+RUN_LOCAL = False
 
 dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
 
@@ -56,7 +56,7 @@ def get_brunel(custom_db=False):
 def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     # Set EvtMax depending on if this is a local job
     brunel_app.extraOpts += 'from Configurables import Brunel\n'
-    brunel_app.extraOpts += 'Brunel().EvtMax = 5'.format(2*int(local)-1)
+    brunel_app.extraOpts += 'Brunel().EvtMax = {0}'.format(2*int(local)-1)
 
     # Configure the corresponding Job
     job = Job(

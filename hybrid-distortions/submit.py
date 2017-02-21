@@ -23,10 +23,10 @@ def get_brunel(custom_db=False):
     brunel = GaudiExec()
     brunel.directory = brunel_dir
     brunel.options = [
-        'options/MC-WithTruth.py',
-        'options/Brunel-Upgrade-Baseline-20150522.py',
-        'options/xdst.py',
-        'options/brunel_options.py'
+        'assets/MC-WithTruth.py',
+        'assets/Brunel-Upgrade-Baseline-20150522.py',
+        'assets/xdst.py',
+        'assets/brunel_options.py'
     ]
 
     if custom_db:

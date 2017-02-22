@@ -55,13 +55,13 @@ make_scenario "tip_x=+2000um_y=0um" 2000 0
 make_scenario "tip_x=+5000um_y=0um" 5000 0
 make_scenario "tip_x=+10000um_y=0um" 10000 0
 
-make_scenario "tip_x=100um_y=-500um" -500 100
-make_scenario "tip_x=100um_y=-100um" -100 100
+make_scenario "tip_x=100um_y=-500um" 100 -500
+make_scenario "tip_x=100um_y=-100um" 100 -100
 make_scenario "tip_x=100um_y=+100um" 100 100
-make_scenario "tip_x=100um_y=+500um" 500 100
+make_scenario "tip_x=100um_y=+500um" 100 500
 
-make_scenario "tip_x=-100um_y=-500um" -500 -100
+make_scenario "tip_x=-100um_y=-500um" -100 -500
 make_scenario "tip_x=-100um_y=-100um" -100 -100
-make_scenario "tip_x=-100um_y=+100um" 100 -100
-make_scenario "tip_x=-100um_y=+500um" 500 -100
+make_scenario "tip_x=-100um_y=+100um" -100 100
+make_scenario "tip_x=-100um_y=+500um" -100 500
 

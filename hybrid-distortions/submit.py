@@ -6,7 +6,7 @@ from os.path import basename, dirname, isdir, join
 # Not needed but keeps flake8 happy
 from Ganga.GPI import (
     Local, Dirac, prepareGaudiExec, SplitByFiles, LocalFile, BKQuery,
-    GaudiExec, DiracFile, Job
+    GaudiExec, DiracFile, Job, JobError
 )
 
 # Config
@@ -56,7 +56,7 @@ def get_brunel(custom_db=False):
 def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     # Set EvtMax depending on if this is a local job
     brunel_app.extraOpts += 'from Configurables import Brunel\n'
-    brunel_app.extraOpts += 'Brunel().EvtMax = {0}'.format(2*int(local)-1)
+    brunel_app.extraOpts += 'Brunel().EvtMax = -1'.format(2*int(local)-1)
 
     # Configure the corresponding Job
     job = Job(
@@ -88,9 +88,22 @@ submit_job(brunel, 'Original DB')
 
 for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
     scenario_name = basename(dirname(db))
-    brunel = get_brunel(custom_db=True)
-    submit_job(brunel, scenario_name, input_files=[
-        join(os.getcwd(), 'output/DDDB.db'),
-        join(os.getcwd(), 'output/SIMCOND.db'),
-        join(os.getcwd(), db)
-    ])
+
+    if any(j.comment.startswith(scenario_name+' reconstruction') for j in jobs):
+        print('Skipping', scenario_name)
+        continue
+
+    for i in range(10):
+        try:
+            brunel = get_brunel(custom_db=True)
+            submit_job(brunel, scenario_name, input_files=[
+                join(os.getcwd(), 'output/DDDB.db'),
+                join(os.getcwd(), 'output/SIMCOND.db'),
+                join(os.getcwd(), db)
+            ])
+        except Exception:
+            print('Retrying', i)
+            jobs[-1].remove()
+        else:
+            print('Submitted', scenario_name)
+            break

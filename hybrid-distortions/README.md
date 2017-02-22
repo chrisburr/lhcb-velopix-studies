@@ -7,6 +7,9 @@ Simulation of the effects of the observed distortions of the velopix modules
 ./make_alignment_scenarios.sh
 ./lb-run Ganga ganga
 # execfile('submit.py')
+# Once jobs have finished (assuming no other jobs are present in ganga)
+# execfile('download_hists.py')
+./make_resolution_plots.py
 ```
 
 ## Useful links

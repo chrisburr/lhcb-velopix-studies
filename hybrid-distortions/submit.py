@@ -6,7 +6,7 @@ from os.path import basename, dirname, isdir, join
 # Not needed but keeps flake8 happy
 from Ganga.GPI import (
     Local, Dirac, prepareGaudiExec, SplitByFiles, LocalFile, BKQuery,
-    GaudiExec, DiracFile, Job, jobs
+    GaudiExec, DiracFile, Job, jobs, queues
 )
 
 # Config
@@ -82,7 +82,7 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
 
     job.inputfiles = input_files or []
 
-    job.submit()
+    queues.add(job.submit)
     return True
 
 

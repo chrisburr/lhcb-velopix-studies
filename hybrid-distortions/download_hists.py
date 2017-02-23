@@ -11,9 +11,6 @@ from Ganga.GPI import jobs
 def download_hists(lfn, outdir):
     if not isdir(outdir):
         makedirs(outdir)
-    if listdir(outdir):
-        print('Skipping', lfn)
-        return
     process = subprocess.Popen(
         'lb-run LHCbDirac dirac-dms-get-file '+lfn,
         shell=True, stdout=subprocess.PIPE, cwd=outdir
@@ -35,7 +32,11 @@ for j in jobs:
         for f in sj.outputfiles:
             if not f.lfn.endswith('.root'):
                 continue
-            tp.apply_async(download_hists, (f.lfn, join(outdir, str(sj.id))))
+            _outdir = join(outdir, str(sj.id))
+            if isdir(_outdir) and listdir(_outdir):
+                print('Skipping', f.lfn)
+            else:
+                tp.apply_async(download_hists, (f.lfn, _outdir))
 
 tp.close()
 tp.join()

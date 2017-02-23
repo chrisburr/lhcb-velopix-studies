@@ -1,6 +1,6 @@
 from Configurables import Brunel
 from Configurables import CondDB
-from Configurables import CondDBAccessSvc
+from Configurables import LHCbApp
 from Configurables import L0Conf
 from Gaudi.Configuration import GaudiSequencer
 
@@ -21,8 +21,5 @@ GaudiSequencer("CheckPatSeq").Members = [
     "VPClusterMonitor"
 ]
 
-CondDB().addLayer(dbFile="check_positions/DDDB.db", dbName="DDDB")
-CondDB().addLayer(dbFile="check_positions/SIMCOND.db", dbName="SIMCOND")
-alignment_conditions = CondDBAccessSvc("AlignmentConditions")
-alignment_conditions.ConnectionString = "sqlite_file:check_positions/Alignment_SIMCOND.db/SIMCOND"
-CondDB().addLayer(alignment_conditions)
+LHCbApp().DDDBtag = "dddb-20170218"
+LHCbApp().CondDBtag = "sim-20170210-vc-md100"

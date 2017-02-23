@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
+import os
 
 import GaudiPython
 
@@ -21,6 +22,8 @@ def scan_to_edge(geo, start_point, axis, direction):
         else:
             getattr(p_local, 'Set'+axis)(getattr(p_local, axis)()-direction)
             direction /= 10.
+    # Step back a little so we don't get stuck due to numerical instability
+    getattr(p_local, 'Set'+axis)(getattr(p_local, axis)()-direction)
     # We still be inside the ladder
     assert geo.isInside(geo.toGlobal(p_local))
     return p_local
@@ -39,7 +42,7 @@ def find_corners_of_cuboid(geo):
     # Find point C
     corners['C'] = scan_to_edge(geo, corners['B'], 'Y', 1)
     # Find points G
-    corners['G'] = scan_to_edge(geo, corners['B'], 'Z', 1)
+    corners['G'] = scan_to_edge(geo, corners['C'], 'Z', 1)
     # Find points F and H
     corners['F'] = scan_to_edge(geo, corners['G'], 'Y', -1)
     corners['H'] = scan_to_edge(geo, corners['G'], 'X', -1)
@@ -47,9 +50,9 @@ def find_corners_of_cuboid(geo):
     return corners
 
 
-def make_geometry_json(det):
-    # appMgr = GaudiPython.AppMgr(outputlevel=3, joboptions='options.py')
-    # det = appMgr.detSvc()
+def make_geometry_json():
+    appMgr = GaudiPython.AppMgr(outputlevel=3, joboptions='options.py')
+    det = appMgr.detSvc()
 
     velo_geometry_local = {}
     velo_geometry_global = {}
@@ -84,6 +87,7 @@ def make_geometry_json(det):
     return velo_geometry_local, velo_geometry_global
 
 
-# if __name__ == '__main__':
-    # MAKE OUTPUT DIRECTORY
-    # make_geometry_json()
+if __name__ == '__main__':
+    if not os.path.isdir('output'):
+        os.makedirs('output')
+    make_geometry_json()

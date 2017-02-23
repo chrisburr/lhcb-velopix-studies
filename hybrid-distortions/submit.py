@@ -6,7 +6,7 @@ from os.path import basename, dirname, isdir, join
 # Not needed but keeps flake8 happy
 from Ganga.GPI import (
     Local, Dirac, prepareGaudiExec, SplitByFiles, LocalFile, BKQuery,
-    GaudiExec, DiracFile, Job, JobError
+    GaudiExec, DiracFile, Job, jobs
 )
 
 # Config
@@ -54,6 +54,9 @@ def get_brunel(custom_db=False):
 
 
 def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
+    if isdir(join('output/scenarios', reco_type, 'hists')):
+        return False
+
     # Set EvtMax depending on if this is a local job
     brunel_app.extraOpts += 'from Configurables import Brunel\n'
     brunel_app.extraOpts += 'Brunel().EvtMax = -1'.format(2*int(local)-1)
@@ -74,12 +77,13 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
         job.inputdata = dataset[:1]
     else:
         job.backend = Dirac()
-        job.outputfiles = [DiracFile('*.xdst'), DiracFile('*.root')]
+        job.outputfiles = [DiracFile('*.root')]
         job.inputdata = dataset
 
     job.inputfiles = input_files or []
 
     job.submit()
+    return True
 
 
 # Submit a job using the nominal tags directly
@@ -96,7 +100,7 @@ for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
     for i in range(10):
         try:
             brunel = get_brunel(custom_db=True)
-            submit_job(brunel, scenario_name, input_files=[
+            did_submit = submit_job(brunel, scenario_name, input_files=[
                 join(os.getcwd(), 'output/DDDB.db'),
                 join(os.getcwd(), 'output/SIMCOND.db'),
                 join(os.getcwd(), db)
@@ -105,5 +109,8 @@ for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
             print('Retrying', i)
             jobs[-1].remove()
         else:
-            print('Submitted', scenario_name)
+            if did_submit:
+                print('Submitted', scenario_name)
+            else:
+                print('Skipped', scenario_name)
             break

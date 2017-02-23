@@ -9,15 +9,17 @@ function make_scenario_with_sigma {
     Y_DIST="$3"
     SIGMA="$4"
 
-    ./assets/build_alignment.py \
-        --basedir="output/scenarios/$SCENARIO" \
-        --x-distortion="$X_DIST" \
-        --y-distortion="$Y_DIST" \
-        --sigma="$SIGMA"
+    if [ ! -d "output/scenarios/$SCENARIO" ]; then
+        ./assets/build_alignment.py \
+            --basedir="output/scenarios/$SCENARIO" \
+            --x-distortion="$X_DIST" \
+            --y-distortion="$Y_DIST" \
+            --sigma="$SIGMA"
 
-    lb-run LHCb/latest copy_files_to_db.py \
-        -c "sqlite_file:output/scenarios/$SCENARIO/Alignment_SIMCOND.db/SIMCOND" \
-        -s "output/scenarios/$SCENARIO/SIMCOND"
+        lb-run LHCb/latest copy_files_to_db.py \
+            -c "sqlite_file:output/scenarios/$SCENARIO/Alignment_SIMCOND.db/SIMCOND" \
+            -s "output/scenarios/$SCENARIO/SIMCOND"
+    fi
 }
 
 function make_scenario {
@@ -65,3 +67,70 @@ make_scenario "tip_x=-100um_y=-100um" -100 -100
 make_scenario "tip_x=-100um_y=+100um" -100 100
 make_scenario "tip_x=-100um_y=+500um" -100 500
 
+make_scenario "tip_x=+100um_y=+500um" +100 +500
+make_scenario "tip_x=+100um_y=+1000um" +100 +1000
+make_scenario "tip_x=+100um_y=+2000um" +100 +2000
+make_scenario "tip_x=+100um_y=+10000um" +100 +10000
+make_scenario "tip_x=+500um_y=+500um" +500 +500
+make_scenario "tip_x=+500um_y=+1000um" +500 +1000
+make_scenario "tip_x=+500um_y=+2000um" +500 +2000
+make_scenario "tip_x=+500um_y=+10000um" +500 +10000
+make_scenario "tip_x=+1000um_y=+500um" +1000 +500
+make_scenario "tip_x=+1000um_y=+1000um" +1000 +1000
+make_scenario "tip_x=+1000um_y=+2000um" +1000 +2000
+make_scenario "tip_x=+1000um_y=+10000um" +1000 +10000
+make_scenario "tip_x=+2000um_y=+500um" +2000 +500
+make_scenario "tip_x=+2000um_y=+1000um" +2000 +1000
+make_scenario "tip_x=+2000um_y=+2000um" +2000 +2000
+make_scenario "tip_x=+2000um_y=+10000um" +2000 +10000
+
+make_scenario "tip_x=-100um_y=+500um" -100 +500
+make_scenario "tip_x=-100um_y=+1000um" -100 +1000
+make_scenario "tip_x=-100um_y=+2000um" -100 +2000
+make_scenario "tip_x=-100um_y=+10000um" -100 +10000
+make_scenario "tip_x=-500um_y=+500um" -500 +500
+make_scenario "tip_x=-500um_y=+1000um" -500 +1000
+make_scenario "tip_x=-500um_y=+2000um" -500 +2000
+make_scenario "tip_x=-500um_y=+10000um" -500 +10000
+make_scenario "tip_x=-1000um_y=+500um" -1000 +500
+make_scenario "tip_x=-1000um_y=+1000um" -1000 +1000
+make_scenario "tip_x=-1000um_y=+2000um" -1000 +2000
+make_scenario "tip_x=-1000um_y=+10000um" -1000 +10000
+make_scenario "tip_x=-2000um_y=+500um" -2000 +500
+make_scenario "tip_x=-2000um_y=+1000um" -2000 +1000
+make_scenario "tip_x=-2000um_y=+2000um" -2000 +2000
+make_scenario "tip_x=-2000um_y=+10000um" -2000 +10000
+
+make_scenario "tip_x=+100um_y=-500um" +100 -500
+make_scenario "tip_x=+100um_y=-1000um" +100 -1000
+make_scenario "tip_x=+100um_y=-2000um" +100 -2000
+make_scenario "tip_x=+100um_y=-10000um" +100 -10000
+make_scenario "tip_x=+500um_y=-500um" +500 -500
+make_scenario "tip_x=+500um_y=-1000um" +500 -1000
+make_scenario "tip_x=+500um_y=-2000um" +500 -2000
+make_scenario "tip_x=+500um_y=-10000um" +500 -10000
+make_scenario "tip_x=+1000um_y=-500um" +1000 -500
+make_scenario "tip_x=+1000um_y=-1000um" +1000 -1000
+make_scenario "tip_x=+1000um_y=-2000um" +1000 -2000
+make_scenario "tip_x=+1000um_y=-10000um" +1000 -10000
+make_scenario "tip_x=+2000um_y=-500um" +2000 -500
+make_scenario "tip_x=+2000um_y=-1000um" +2000 -1000
+make_scenario "tip_x=+2000um_y=-2000um" +2000 -2000
+make_scenario "tip_x=+2000um_y=-10000um" +2000 -10000
+
+make_scenario "tip_x=-100um_y=-500um" -100 -500
+make_scenario "tip_x=-100um_y=-1000um" -100 -1000
+make_scenario "tip_x=-100um_y=-2000um" -100 -2000
+make_scenario "tip_x=-100um_y=-10000um" -100 -10000
+make_scenario "tip_x=-500um_y=-500um" -500 -500
+make_scenario "tip_x=-500um_y=-1000um" -500 -1000
+make_scenario "tip_x=-500um_y=-2000um" -500 -2000
+make_scenario "tip_x=-500um_y=-10000um" -500 -10000
+make_scenario "tip_x=-1000um_y=-500um" -1000 -500
+make_scenario "tip_x=-1000um_y=-1000um" -1000 -1000
+make_scenario "tip_x=-1000um_y=-2000um" -1000 -2000
+make_scenario "tip_x=-1000um_y=-10000um" -1000 -10000
+make_scenario "tip_x=-2000um_y=-500um" -2000 -500
+make_scenario "tip_x=-2000um_y=-1000um" -2000 -1000
+make_scenario "tip_x=-2000um_y=-2000um" -2000 -2000
+make_scenario "tip_x=-2000um_y=-10000um" -2000 -10000

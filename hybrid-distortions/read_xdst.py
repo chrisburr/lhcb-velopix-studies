@@ -25,6 +25,7 @@ from LinkerInstances.eventassoc import linkedTo
 from Configurables import CondDB
 from Configurables import CondDBAccessSvc
 from Configurables import GaudiSequencer
+from Configurables import PrPixelStoreClusters
 import GaudiPython
 from Configurables import LHCbApp
 from LinkerInstances.eventassoc import linkedTo
@@ -84,7 +85,6 @@ fitter.MeasProvider.IgnoreUT = True
 # decodingSeq.Members += [d.setup() for x in decs for d in x]
 
 vp_sequence = GaudiSequencer('PrPixelStoreClusters_Seq')
-from Configurables import PrPixelStoreClusters
 vp_sequence.Members.append(PrPixelStoreClusters())
 
 # ft_sequence = GaudiSequencer('FTRawBankDecoder_Seq')
@@ -156,14 +156,15 @@ for track in evt['Rec/Track/Best']:
             continue
         c = find_cluster(hit)
         my_state = state.clone()
-        r = extrap.propagate(my_state, c.z())
+        assert extrap.propagate(my_state, c.z())
         apoint = my_state.position()
         adirec = my_state.slopes()
         traj = LineTraj(apoint, adirec, Range(-1000., 1000.))
         dis = XYZVector()
         s = Double(0.1)
         a = Double(0.0005)
-        success = poca.minimize(traj, s, XYZPoint(c.x(), c.y(), c.z()), dis, a)
+        assert poca.minimize(traj, s, XYZPoint(c.x(), c.y(), c.z()), dis, a)
+        # p_ontrack = traj.position(s)
         # print(success.isFailure() > 0)
         ip = dis.r()
         print(c.z(), ip, dis.x(), dis.y(), dis.z(), sep='\t')

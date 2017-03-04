@@ -7,15 +7,15 @@ import GaudiPython
 import ROOT
 from LinkerInstances.eventassoc import linkedTo
 
-
 LineTraj = GaudiPython.gbl.LHCb.LineTraj
 Range = GaudiPython.gbl.std.pair('double', 'double')
 
-appMgr = GaudiPython.AppMgr()
-evt = appMgr.evtsvc()
-poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
-extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
-
+# LHCb Tracks appear to have the following states
+# > Downstream BegRich2               FirstMeasurement
+# > Long       BegRich2 ClosestToBeam FirstMeasurement
+# > Ttrack     BegRich2               FirstMeasurement
+# > Upstream            ClosestToBeam FirstMeasurement
+# > Velo                ClosestToBeam
 state_to_use = {
     ROOT.LHCb.Track.Velo: ROOT.LHCb.State.ClosestToBeam,
     ROOT.LHCb.Track.Downstream: ROOT.LHCb.State.FirstMeasurement,
@@ -23,6 +23,14 @@ state_to_use = {
     ROOT.LHCb.Track.Ttrack: ROOT.LHCb.State.FirstMeasurement,
     ROOT.LHCb.Track.Upstream: ROOT.LHCb.State.FirstMeasurement,
 }
+
+
+def initialise(app_manager, event_service):
+    global appMgr, evt, poca, extrap
+    appMgr = app_manager
+    evt = event_service
+    poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
+    extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
 
 
 class Cluster(object):

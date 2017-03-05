@@ -2,7 +2,9 @@
 from __future__ import division
 from __future__ import print_function
 
-from os.path import join
+import argparse
+from glob import glob
+from os.path import join, basename
 import os
 import json
 
@@ -16,19 +18,20 @@ from Configurables import PrPixelStoreClusters
 import track_tools
 from track_tools import Track
 
-job_name = 'tip_x=0um_y=-1000um_sigma=0.2'
-files = ['/pc2014-data3/cburr/hybrid_xdsts/155481706/Brunel.xdst']
 
-
-def add_data():
-    IOHelper('ROOT').inputFiles(files)
+def add_data(job_name):
+    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'xdsts/*.xdst')))
 
     CondDB().Upgrade = True
-    CondDB().addLayer(dbFile=join(os.getcwd(), 'output/DDDB.db'), dbName="DDDB")
-    CondDB().addLayer(dbFile=join(os.getcwd(), 'output/SIMCOND.db'), dbName="SIMCOND")
-    alignment_conditions = CondDBAccessSvc("AlignmentConditions")
-    alignment_conditions.ConnectionString = "sqlite_file:{}/output/scenarios/{}/Alignment_SIMCOND.db/SIMCOND".format(os.getcwd(), job_name)
-    CondDB().addLayer(alignment_conditions)
+    if job_name == 'Original_DB':
+        lhcbApp.DDDBtag = "dddb-20160304"
+        lhcbApp.CondDBtag = "sim-20150716-vc-md100"
+    else:
+        CondDB().addLayer(dbFile=join(os.getcwd(), 'output/DDDB.db'), dbName="DDDB")
+        CondDB().addLayer(dbFile=join(os.getcwd(), 'output/SIMCOND.db'), dbName="SIMCOND")
+        alignment_conditions = CondDBAccessSvc("AlignmentConditions")
+        alignment_conditions.ConnectionString = "sqlite_file:{}/output/scenarios/{}/Alignment_SIMCOND.db/SIMCOND".format(os.getcwd(), job_name)
+        CondDB().addLayer(alignment_conditions)
 
 
 def configure():
@@ -47,13 +50,24 @@ def configure():
     appConf.TopAlg += [vp_sequence]
 
 
-add_data()
+parser = argparse.ArgumentParser(description='Produce JSON with reconstruction information')
+parser.add_argument(
+    'scenario',
+    choices=map(basename, glob('output/scenarios/*')),
+    help='The reconstruction scenario to use'
+)
+
+args = parser.parse_args()
+
+
+add_data(args.scenario)
 configure()
 appMgr, evt = track_tools.initialise()
 
 output = {'tracks': [], 'clusters': []}
 while True:
     n_event = track_tools.run()
+    print(n_event)
     if not evt['/Event/Rec/Header'] or n_event > 10:
         break
 
@@ -63,7 +77,7 @@ while True:
             n_event, n_t, track.track_type, track.rx, track.ry,
             track.px, track.py, track.pz
         ))
-        print(*output['tracks'][-1])
+        # print(*output['tracks'][-1])
 
         # Store the cluster information
         for n_c, hit in enumerate(track.vp_hits):
@@ -74,7 +88,7 @@ while True:
                 intercept.x(), intercept.y(), intercept.z(),
                 residual.x(), residual.y(), residual.z(),
             ))
-            print(' > ', *output['clusters'][-1])
+            # print(' > ', *output['clusters'][-1])
 
-with open(job_name+'.json', 'wt') as f:
+with open(join('output/scenarios', args.scenario, 'tracks_and_clusters.json'), 'wt') as f:
     json.dump(output, f)

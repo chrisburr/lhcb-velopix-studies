@@ -114,8 +114,48 @@ class VPHit(Hit):
         assert self._hit.isVP()
 
     @property
+    def vp_id(self):
+        try:
+            return self._vp_id
+        except AttributeError:
+            self._vp_id = self._hit.vpID()
+            return self._vp_id
+
+    @property
     def cluster(self):
-        return get_clusters()[self._hit.vpID().channelID()]
+        return get_clusters()[self.vp_id.channelID()]
+
+    @property
+    def sidepos(self):
+        return self.vp_id.sidepos()
+
+    @property
+    def module(self):
+        return self.vp_id.module()
+
+    @property
+    def sensor(self):
+        return self.vp_id.sensor()
+
+    @property
+    def station(self):
+        return self.vp_id.station()
+
+    @property
+    def chip(self):
+        return self.vp_id.chip()
+
+    @property
+    def row(self):
+        return self.vp_id.row()
+
+    @property
+    def col(self):
+        return self.vp_id.col()
+
+    @property
+    def scol(self):
+        return self.vp_id.scol()
 
 
 class UTHit(Hit):

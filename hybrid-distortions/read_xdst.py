@@ -50,45 +50,55 @@ def configure():
     appConf.TopAlg += [vp_sequence]
 
 
-parser = argparse.ArgumentParser(description='Produce JSON with reconstruction information')
-parser.add_argument(
-    'scenario',
-    choices=map(basename, glob('output/scenarios/*')),
-    help='The reconstruction scenario to use'
-)
+def read_tracks_and_clusters(scenario, n_events):
+    add_data(scenario)
+    configure()
+    appMgr, evt = track_tools.initialise()
 
-args = parser.parse_args()
+    output = {'tracks': [], 'clusters': []}
+    while True:
+        n_event = track_tools.run()
+        if not evt['/Event/Rec/Header'] or n_event > n_events:
+            break
 
-
-add_data(args.scenario)
-configure()
-appMgr, evt = track_tools.initialise()
-
-output = {'tracks': [], 'clusters': []}
-while True:
-    n_event = track_tools.run()
-    print(n_event)
-    if not evt['/Event/Rec/Header'] or n_event > 10:
-        break
-
-    for n_t, track in enumerate(map(Track, evt['Rec/Track/Best'])):
-        # Store the track information
-        output['tracks'].append((
-            n_event, n_t, track.track_type, track.rx, track.ry,
-            track.px, track.py, track.pz
-        ))
-        # print(*output['tracks'][-1])
-
-        # Store the cluster information
-        for n_c, hit in enumerate(track.vp_hits):
-            residual, intercept = hit.fit()
-            output['clusters'].append((
-                n_event, n_t, n_c,
-                hit.cluster.x, hit.cluster.y, hit.cluster.z,
-                intercept.x(), intercept.y(), intercept.z(),
-                residual.x(), residual.y(), residual.z(),
+        for n_t, track in enumerate(map(Track, evt['Rec/Track/Best'])):
+            # Store the track information
+            output['tracks'].append((
+                n_event, n_t, track.track_type, track.rx, track.ry,
+                track.px, track.py, track.pz
             ))
-            # print(' > ', *output['clusters'][-1])
+            # print(*output['tracks'][-1])
 
-with open(join('output/scenarios', args.scenario, 'tracks_and_clusters.json'), 'wt') as f:
-    json.dump(output, f)
+            # Store the cluster information
+            for n_c, hit in enumerate(track.vp_hits):
+                residual, intercept = hit.fit()
+                output['clusters'].append((
+                    n_event, n_t, n_c,
+                    hit.sidepos, hit.module, hit.sensor, hit.station, hit.chip,
+                    hit.row, hit.col, hit.scol,
+                    hit.cluster.x, hit.cluster.y, hit.cluster.z,
+                    intercept.x(), intercept.y(), intercept.z(),
+                    residual.x(), residual.y(), residual.z(),
+                ))
+                # print(' > ', *output['clusters'][-1])
+
+    fn = join('output/scenarios', scenario, 'tracks_and_clusters.json')
+    print('Writing json to', fn)
+    with open(fn, 'wt') as f:
+        json.dump(output, f)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Produce JSON with reconstruction information')
+    parser.add_argument(
+        'scenario',
+        choices=map(basename, glob('output/scenarios/*')),
+        help='The reconstruction scenario to use'
+    )
+    parser.add_argument(
+        '--n-events', '-n', type=int, default=100,
+        help='The reconstruction scenario to use'
+    )
+
+    args = parser.parse_args()
+    read_tracks_and_clusters(args.scenario, args.n_events)

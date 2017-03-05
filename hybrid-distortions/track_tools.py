@@ -5,6 +5,7 @@ from math import atan2
 
 import GaudiPython
 import ROOT
+from LHCbMath import XYZPoint, XYZVector
 from LinkerInstances.eventassoc import linkedTo
 
 LineTraj = GaudiPython.gbl.LHCb.LineTraj
@@ -25,12 +26,31 @@ state_to_use = {
 }
 
 
-def initialise(app_manager, event_service):
+def initialise():
     global appMgr, evt, poca, extrap
-    appMgr = app_manager
-    evt = event_service
+    appMgr = GaudiPython.AppMgr()
+    evt = appMgr.evtsvc()
     poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
     extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
+    run.n = -1
+    return appMgr, evt
+
+
+def run(step=1):
+    appMgr.run(1)
+    get_clusters.clusters = None
+    run.n += 1
+    return run.n
+
+
+def get_clusters():
+    # This is very slow so use aggressive caching
+    if get_clusters.clusters is None:
+        get_clusters.clusters = {
+            c.channelID().channelID(): Cluster(c)
+            for c in evt['/Event/Raw/VP/Clusters']
+        }
+    return get_clusters.clusters.copy()
 
 
 class Cluster(object):
@@ -52,7 +72,7 @@ class Cluster(object):
 
     @property
     def point(self):
-        return ROOT.XYZPoint(self.x, self.y, self.z)
+        return XYZPoint(self.x, self.y, self.z)
 
 
 class Hit(object):
@@ -66,11 +86,11 @@ class Hit(object):
     def cluster(self):
         raise NotImplementedError()
 
-    def _fit(self):
+    def fit(self):
         state = self._track.state
-        assert extrap.propagate(state, self.cluster.z())
+        assert extrap.propagate(state, self.cluster.z)
         traj = LineTraj(state.position(), state.slopes(), Range(-1000., 1000.))
-        residual = ROOT.XYZVector()
+        residual = XYZVector()
         s = ROOT.Double(0.1)
         a = ROOT.Double(0.0005)
         assert poca.minimize(traj, s, self.cluster.point, residual, a)
@@ -78,12 +98,12 @@ class Hit(object):
 
     @property
     def residual(self):
-        residual, position = self._fit()
+        residual, position = self.fit()
         return residual
 
     @property
     def closest_point(self):
-        residual, position = self._fit()
+        residual, position = self.fit()
         return position
 
 
@@ -95,10 +115,7 @@ class VPHit(Hit):
 
     @property
     def cluster(self):
-        for c in evt['/Event/Raw/VP/Clusters']:
-            if self._hit.vpID().channelID() == c.channelID().channelID():
-                return Cluster(c)
-        raise ValueError()
+        return get_clusters()[self._hit.vpID().channelID()]
 
 
 class UTHit(Hit):
@@ -122,7 +139,7 @@ class Track(object):
 
     @property
     def vp_hits(self):
-        return [x.vpID() for x in self._track.lhcbIDs() if x.isVP()]
+        return [h for h in self.hits if isinstance(h, VPHit)]
 
     @property
     def track_type(self):
@@ -138,11 +155,11 @@ class Track(object):
     @property
     def hits(self):
         for hit in self._track.lhcbIDs():
-            if self._hit.isVP():
+            if hit.isVP():
                 yield VPHit(hit, self)
-            elif self._hit.isUT():
+            elif hit.isUT():
                 yield UTHit(hit, self)
-            elif self._hit.isFT():
+            elif hit.isFT():
                 yield FTHit(hit, self)
             else:
                 raise ValueError('Unrecognised hit')
@@ -160,6 +177,26 @@ class Track(object):
     def ry(self):
         slope = self.state.slopes()
         return atan2(slope.y(), slope.z())
+
+    @property
+    def p(self):
+        return self._track.p()
+
+    @property
+    def pt(self):
+        return self._track.pt()
+
+    @property
+    def px(self):
+        return self._track.momentum().x()
+
+    @property
+    def py(self):
+        return self._track.momentum().y()
+
+    @property
+    def pz(self):
+        return self._track.momentum().z()
 
 
 class MCParticle(object):

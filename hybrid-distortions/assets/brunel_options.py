@@ -7,5 +7,6 @@ L0Conf().EnsureKnownTCK = False
 GaudiSequencer("CheckPatSeq").Members = [
     "PrChecker",
     "TrackIPResolutionChecker",
+    "TrackIPResolutionCheckerNT",
     "VPClusterMonitor"
 ]

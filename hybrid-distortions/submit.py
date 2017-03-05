@@ -77,7 +77,7 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
         job.inputdata = dataset[:1]
     else:
         job.backend = Dirac()
-        job.outputfiles = [DiracFile('*.root')]
+        job.outputfiles = [DiracFile('*.xdst'), DiracFile('*.root')]
         job.inputdata = dataset
 
     job.inputfiles = input_files or []
@@ -88,8 +88,9 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
 
 # Submit a job using the nominal tags directly
 brunel = get_brunel(custom_db=False)
-submit_job(brunel, 'Original DB')
+submit_job(brunel, 'Original_DB')
 
+# for db in [fn for fn in glob('output/scenarios/*/Alignment_SIMCOND.db') if re.match('.*tip_x=0um_y=(\+|-)\d+um(_sigma=0.2)?/.*', fn)]:
 for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
     scenario_name = basename(dirname(db))
 

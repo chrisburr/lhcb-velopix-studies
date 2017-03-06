@@ -76,7 +76,7 @@ def read_tracks_and_clusters(scenario, n_events):
 
         # Look at the header
         header = evt['/Event/Rec/Header']
-        if not header or n_event > n_events:
+        if not header or n_event >= n_events:
             break
         run_number = header.runNumber()
         event_number = header.evtNumber()

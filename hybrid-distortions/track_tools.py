@@ -32,6 +32,8 @@ def initialise():
     evt = appMgr.evtsvc()
     poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
     extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
+    # Because why not...
+    ROOT.gSystem.Load('/cvmfs/lhcb.cern.ch/lib/lhcb/LHCB/LHCB_v41r1/InstallArea/x86_64-slc6-gcc49-opt/lib/libLinkerEvent.so')
     run.n = -1
     return appMgr, evt
 
@@ -188,6 +190,7 @@ class Track(object):
     @property
     def mc_particle(self):
         MCParticle = GaudiPython.gbl.LHCb.MCParticle
+        Track = GaudiPython.gbl.LHCb.Track
         track_to_mc = linkedTo(MCParticle, Track, 'Rec/Track/Best')
         assert track_to_mc.range(self._track).size() == 1
         return track_to_mc.first(self._track)

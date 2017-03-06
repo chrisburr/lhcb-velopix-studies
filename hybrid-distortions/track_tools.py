@@ -61,6 +61,10 @@ class Cluster(object):
         self._cluster = cluster
 
     @property
+    def channel_id(self):
+        return self._cluster.channelID().channelID()
+
+    @property
     def x(self):
         return self._cluster.x()
 
@@ -73,7 +77,7 @@ class Cluster(object):
         return self._cluster.z()
 
     @property
-    def point(self):
+    def position(self):
         return XYZPoint(self.x, self.y, self.z)
 
 
@@ -87,26 +91,6 @@ class Hit(object):
     @property
     def cluster(self):
         raise NotImplementedError()
-
-    def fit(self):
-        state = self._track.state
-        assert extrap.propagate(state, self.cluster.z)
-        traj = LineTraj(state.position(), state.slopes(), Range(-1000., 1000.))
-        residual = XYZVector()
-        s = ROOT.Double(0.1)
-        a = ROOT.Double(0.0005)
-        assert poca.minimize(traj, s, self.cluster.point, residual, a)
-        return residual, traj.position(s)
-
-    @property
-    def residual(self):
-        residual, position = self.fit()
-        return residual
-
-    @property
-    def closest_point(self):
-        residual, position = self.fit()
-        return position
 
 
 class VPHit(Hit):
@@ -178,6 +162,16 @@ class Track(object):
     """docstring for Track"""
     def __init__(self, track):
         self._track = track
+
+    def fit_to_point(self, position):
+        state = self.state
+        assert extrap.propagate(state, position.z())
+        traj = LineTraj(state.position(), state.slopes(), Range(-1000., 1000.))
+        residual = XYZVector()
+        s = ROOT.Double(0.1)
+        a = ROOT.Double(0.0005)
+        assert poca.minimize(traj, s, position, residual, a)
+        return traj.position(s), residual
 
     @property
     def vp_hits(self):

@@ -16,6 +16,7 @@ import pandas as pd
 from Configurables import CondDB
 from Configurables import CondDBAccessSvc
 from Configurables import GaudiSequencer
+from Configurables import NoPIDsParticleMaker
 from Configurables import PrPixelStoreClusters
 from GaudiConf import IOHelper
 from LHCbConfig import ApplicationMgr, lhcbApp
@@ -26,7 +27,7 @@ from track_tools import Track
 
 
 def add_data(job_name):
-    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'xdsts/*.xdst')))
+    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'xdsts/3.xdst')))
 
     CondDB().Upgrade = True
     if job_name == 'Original_DB':
@@ -55,6 +56,12 @@ def configure():
     appConf.ExtSvc += ['ToolSvc', 'DataOnDemandSvc']
     appConf.TopAlg += [vp_sequence]
 
+    PreLoadPions = NoPIDsParticleMaker('PreLoadPions')
+    PreLoadPions.Particle = 'pions'
+    PreLoadKaons = NoPIDsParticleMaker('PreLoadKaons')
+    PreLoadKaons.Particle = 'kaon'
+    appConf.TopAlg += [PreLoadPions, PreLoadKaons]
+
 
 def read_tracks_and_clusters(scenario, n_events):
     add_data(scenario)
@@ -62,7 +69,7 @@ def read_tracks_and_clusters(scenario, n_events):
     appMgr, evt = track_tools.initialise()
 
     true_clusters_fn = 'output/scenarios/Original_DB/clusters.msg'
-    if isfile(true_clusters_fn):
+    if isfile(true_clusters_fn) and scenario != 'Original_DB':
         true_clusters = pd.read_msgpack(true_clusters_fn)
     else:
         true_clusters = None
@@ -89,7 +96,8 @@ def read_tracks_and_clusters(scenario, n_events):
         for track_number, track in enumerate(map(Track, evt['Rec/Track/Best'])):
             tracks.append([
                 run_number, event_number, track_number, track.track_type,
-                track.rx, track.ry, track.px, track.py, track.pz
+                track.rx, track.ry, track.px, track.py, track.pz,
+                track.mc_particle.px, track.mc_particle.py, track.mc_particle.pz
             ])
 
             # Store information about the associated clusters
@@ -127,7 +135,7 @@ def read_tracks_and_clusters(scenario, n_events):
     clusters = pd.DataFrame(clusters, columns=['run_number', 'event_number', 'channel_id', 'x', 'y', 'z'])
     clusters.to_msgpack(join(out_dir, 'clusters.msg'))
 
-    tracks = pd.DataFrame(tracks, columns=['run_number', 'event_number', 'track_number', 'track_type', 'tx', 'ty', 'px', 'py', 'pz'])
+    tracks = pd.DataFrame(tracks, columns=['run_number', 'event_number', 'track_number', 'track_type', 'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'])
     tracks.to_msgpack(join(out_dir, 'tracks.msg'))
 
     residuals = pd.DataFrame(residuals, columns=[

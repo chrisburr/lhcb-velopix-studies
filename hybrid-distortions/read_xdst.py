@@ -77,6 +77,7 @@ def read_tracks_and_clusters(scenario, n_events):
     clusters = []
     tracks = []
     residuals = []
+    particles = []
 
     while True:
         n_event = track_tools.run()
@@ -92,12 +93,30 @@ def read_tracks_and_clusters(scenario, n_events):
         for channel_id, cluster in track_tools.get_clusters().items():
             clusters.append([run_number, event_number, channel_id, cluster.x, cluster.y, cluster.z])
 
+        # Make a dataframe of just this event's clusters (for speed)
+        if true_clusters is None:
+            true_clusters_for_event = None
+        else:
+            true_clusters_for_event = true_clusters.query(
+                '(run_number == {run_number}) & (event_number == {event_number})'
+                .format(run_number=run_number, event_number=event_number)
+            )
+
         # Store information about the tracks
         for track_number, track in enumerate(map(Track, evt['Rec/Track/Best'])):
+            try:
+                mc_particle = track.mc_particle
+            except ValueError:
+                mc_particle_px, mc_particle_py, mc_particle_pz = None, None, None
+            else:
+                mc_particle_px = mc_particle.px
+                mc_particle_py = mc_particle.py
+                mc_particle_pz = mc_particle.pz
+
             tracks.append([
-                run_number, event_number, track_number, track.track_type,
+                run_number, event_number, track_number, track.key, track.track_type,
                 track.rx, track.ry, track.px, track.py, track.pz,
-                track.mc_particle.px, track.mc_particle.py, track.mc_particle.pz
+                mc_particle_px, mc_particle_py, mc_particle_pz
             ])
 
             # Store information about the associated clusters
@@ -113,13 +132,11 @@ def read_tracks_and_clusters(scenario, n_events):
                 hit_data.extend([residual.x(), residual.y(), residual.z()])
 
                 # Calculate the residual for the true geometry
-                if true_clusters is None:
+                if true_clusters_for_event is None:
                     hit_data.extend([None]*6)
                 else:
-                    true_cluster = true_clusters[
-                        (true_clusters.run_number == run_number) &
-                        (true_clusters.event_number == event_number) &
-                        (true_clusters.channel_id == hit.cluster.channel_id)
+                    true_cluster = true_clusters_for_event[
+                        (true_clusters_for_event.channel_id == hit.cluster.channel_id)
                     ]
                     assert len(true_cluster) == 1
                     true_cluster = true_cluster.iloc[0]
@@ -130,13 +147,40 @@ def read_tracks_and_clusters(scenario, n_events):
 
                 residuals.append(hit_data)
 
+        # Add infromation about any truth matched particles we can find:
+        for kp_track, km_track, pi_track in track_tools.get_dstars():
+            try:
+                D0, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi = track_tools.fit_vertex(kp_track, km_track, pi_track)
+            except ValueError:
+                pass
+            else:
+                particles.append([
+                    run_number, event_number, kp_track.key, km_track.key, pi_track.key, d0_vertex.chi2(), d0_vertex.chi2PerDoF(),
+                    D0.momentum().x(), D0.momentum().y(), D0.momentum().z(),
+                    d0_vertex.position().x(), d0_vertex.position().y(), d0_vertex.position().z(),
+                    true_d0_vertex.x(), true_d0_vertex.y(), true_d0_vertex.z(),
+                    true_dst_vertex.x(), true_dst_vertex.y(), true_dst_vertex.z()
+                ])
+
     out_dir = join('output/scenarios', scenario)
 
     clusters = pd.DataFrame(clusters, columns=['run_number', 'event_number', 'channel_id', 'x', 'y', 'z'])
     clusters.to_msgpack(join(out_dir, 'clusters.msg'))
 
-    tracks = pd.DataFrame(tracks, columns=['run_number', 'event_number', 'track_number', 'track_type', 'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'])
+    tracks = pd.DataFrame(tracks, columns=[
+        'run_number', 'event_number', 'track_number', 'track_key', 'track_type',
+        'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'
+    ])
     tracks.to_msgpack(join(out_dir, 'tracks.msg'))
+
+    # TODO Prompt and charge information
+    particles = pd.DataFrame(particles, columns=[
+        'run_number', 'event_number', 'kp_track_key', 'km_track_key', 'pi_track_key', 'vertex_chi2', 'vertex_chi2_per_DoF',
+        'D0_p_x', 'D0_p_y', 'D0_p_z', 'vertex_x', 'vertex_y', 'vertex_z',
+        'true_d0_vertex_x', 'true_d0_vertex_y', 'true_d0_vertex_z',
+        'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'
+    ])
+    particles.to_msgpack(join(out_dir, 'particles.msg'))
 
     residuals = pd.DataFrame(residuals, columns=[
         'run_number', 'event_number', 'track_number', 'cluster_channel_id',

@@ -312,10 +312,7 @@ def fit_vertex(kp_track, km_track, pi_track):
     true = true_d0_vertex - true_dst_vertex
     fitted = d0_vertex.position() - true_d0_vertex
 
-    print('True', true.Mag2(), true)
-    print('Fit ', fitted.Mag2(), fitted)
-
-    return D0, d0_vertex, true, fitted, pi, kp, km
+    return D0, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi
 
 
 def get_dstars():

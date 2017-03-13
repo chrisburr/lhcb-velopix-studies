@@ -1,16 +1,14 @@
 from __future__ import print_function
 
 from multiprocessing.pool import ThreadPool
-from os import listdir, makedirs
-from os.path import isdir, join
+from os import makedirs
+from os.path import basename, isdir, isfile, join
 import subprocess
 
 from Ganga.GPI import jobs
 
 
 def download_hists(lfn, outdir):
-    if not isdir(outdir):
-        makedirs(outdir)
     process = subprocess.Popen(
         'lb-run LHCbDirac dirac-dms-get-file '+lfn,
         shell=True, stdout=subprocess.PIPE, cwd=outdir
@@ -30,11 +28,11 @@ for j in jobs:
         if sj.status != 'completed':
             continue
         for f in sj.outputfiles:
-            if not f.lfn.endswith('.root'):
-                continue
             _outdir = join(outdir, str(sj.id))
-            if isdir(_outdir) and listdir(_outdir):
-                print('Skipping', f.lfn)
+            if not isdir(_outdir):
+                makedirs(_outdir)
+            if isfile(join(_outdir, basename(f.lfn))):
+                print('Skipping', j.id, sj.id, f.lfn)
             else:
                 tp.apply_async(download_hists, (f.lfn, _outdir))
 

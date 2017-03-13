@@ -134,3 +134,16 @@ make_scenario "tip_x=-2000um_y=-500um" -2000 -500
 make_scenario "tip_x=-2000um_y=-1000um" -2000 -1000
 make_scenario "tip_x=-2000um_y=-2000um" -2000 -2000
 make_scenario "tip_x=-2000um_y=-10000um" -2000 -10000
+
+make_scenario_with_sigma "tip_x=0um_y=-1000um" 0 -1000 0
+make_scenario_with_sigma "tip_x=0um_y=-1000um_sigma=0.5" 0 -1000 0.5
+make_scenario_with_sigma "tip_x=0um_y=-500um" 0 -500 0
+make_scenario_with_sigma "tip_x=0um_y=-500um_sigma=0.5" 0 -500 0.5
+make_scenario_with_sigma "tip_x=0um_y=-250um" 0 -250 0
+make_scenario_with_sigma "tip_x=0um_y=-250um_sigma=0.5" 0 -250 0.5
+make_scenario_with_sigma "tip_x=0um_y=+250um" 0 250 0
+make_scenario_with_sigma "tip_x=0um_y=+250um_sigma=0.5" 0 250 0.5
+make_scenario_with_sigma "tip_x=0um_y=+500um" 0 500 0
+make_scenario_with_sigma "tip_x=0um_y=+500um_sigma=0.5" 0 500 0.5
+make_scenario_with_sigma "tip_x=0um_y=+1000um" 0 1000 0
+make_scenario_with_sigma "tip_x=0um_y=+1000um_sigma=0.5" 0 1000 0.5

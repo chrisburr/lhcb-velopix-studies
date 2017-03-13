@@ -217,46 +217,57 @@ def set_hist_range(name, hist):
 
 
 if __name__ == '__main__':
-    for i in [None, '0.02', '0.05', '0.1', '0.2']:
-        suffix = ['_sigma='+str(i), ''][i is None]
-        files = [
-            (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
-            (join(base_dir, 'tip_x=0um_y=-10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=-10000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=-5000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=-5000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=-2000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-2000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=-1000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=-1000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=-500um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=-500um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=-100um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=-100um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+100um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+100um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+500um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+1000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+1000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+2000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=+2000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+5000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=+5000um"+suffix),
-            (join(base_dir, 'tip_x=0um_y=+10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=+10000um"+suffix),
-        ]
+    suffix = ''
+    files = [
+        (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
+        (join(base_dir, 'tip_x=0um_y=-10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=-10000um"+suffix),
+        (join(base_dir, 'tip_x=0um_y=+10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+10000um"+suffix),
+    ]
 
-        out_dir = ['output/plots/gauss_y_'+str(i)+'/', 'output/plots/all_same_y/'][i is None]
-        make_resolution_plots(files,  out_dir)
-        make_resolution_plots(files,  out_dir, log=True)
+    out_dir = 'output/plots/lhcb_week/'
+    make_resolution_plots(files,  out_dir)
+    make_resolution_plots(files,  out_dir, log=True)
 
-    for i in [None, '0.02', '0.05', '0.1', '0.2']:
-        suffix = ['_sigma='+str(i), ''][i is None]
-        files = [
-            (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
-            (join(base_dir, 'tip_x=-10000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=-10000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=-5000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=-5000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=-2000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=-2000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=-1000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=-1000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=-500um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=-500um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=-100um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=-100um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+100um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=+100um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+500um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=+500um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+1000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=+1000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+2000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=+2000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+5000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=+5000um_y=0um"+suffix),
-            (join(base_dir, 'tip_x=+10000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=+10000um_y=0um"+suffix),
-        ]
+    # for i in [None, '0.02', '0.05', '0.1', '0.2']:
+    #     suffix = ['_sigma='+str(i), ''][i is None]
+    #     files = [
+    #         (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
+    #         (join(base_dir, 'tip_x=0um_y=-10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=-10000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=-5000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=-5000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=-2000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-2000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=-1000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=-1000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=-500um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=-500um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=-100um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=-100um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+100um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+100um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+500um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+1000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+1000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+2000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=+2000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+5000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=+5000um"+suffix),
+    #         (join(base_dir, 'tip_x=0um_y=+10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=+10000um"+suffix),
+    #     ]
 
-        out_dir = ['output/plots/gauss_x_'+str(i)+'/', 'output/plots/all_same_x/'][i is None]
-        make_resolution_plots(files,  out_dir)
-        make_resolution_plots(files,  out_dir, log=True)
+    #     out_dir = ['output/plots/gauss_y_'+str(i)+'/', 'output/plots/all_same_y/'][i is None]
+    #     make_resolution_plots(files,  out_dir)
+    #     make_resolution_plots(files,  out_dir, log=True)
+
+    # for i in [None, '0.02', '0.05', '0.1', '0.2']:
+    #     suffix = ['_sigma='+str(i), ''][i is None]
+    #     files = [
+    #         (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
+    #         (join(base_dir, 'tip_x=-10000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=-10000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=-5000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=-5000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=-2000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=-2000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=-1000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=-1000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=-500um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=-500um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=-100um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=-100um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+100um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=+100um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+500um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=+500um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+1000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=+1000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+2000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=+2000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+5000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=+5000um_y=0um"+suffix),
+    #         (join(base_dir, 'tip_x=+10000um_y=0um'+suffix+'/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=+10000um_y=0um"+suffix),
+    #     ]
+
+    #     out_dir = ['output/plots/gauss_x_'+str(i)+'/', 'output/plots/all_same_x/'][i is None]
+    #     make_resolution_plots(files,  out_dir)
+    #     make_resolution_plots(files,  out_dir, log=True)

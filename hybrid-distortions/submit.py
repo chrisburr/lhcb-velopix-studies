@@ -1,7 +1,6 @@
 # [SublimeLinter flake8-max-line-length:100]
-from glob import glob
 import os
-from os.path import basename, dirname, isdir, join
+from os.path import isdir, join
 
 # Not needed but keeps flake8 happy
 from Ganga.GPI import (
@@ -54,12 +53,9 @@ def get_brunel(custom_db=False):
 
 
 def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
-    if isdir(join('output/scenarios', reco_type, 'hists')):
-        return False
-
     # Set EvtMax depending on if this is a local job
     brunel_app.extraOpts += 'from Configurables import Brunel\n'
-    brunel_app.extraOpts += 'Brunel().EvtMax = -1'.format(2*int(local)-1)
+    brunel_app.extraOpts += 'Brunel().EvtMax = {}'.format(2*int(local)-1)
 
     # Configure the corresponding Job
     job = Job(
@@ -86,32 +82,51 @@ def submit_job(brunel_app, reco_type, input_files=None, local=RUN_LOCAL):
     return True
 
 
-# Submit a job using the nominal tags directly
-brunel = get_brunel(custom_db=False)
-submit_job(brunel, 'Original_DB')
+def submit_scenario(scenario):
+    # Don't submit this job if it has already been submitted
+    if any(j.comment.startswith(scenario+' reconstruction') for j in jobs):
+        print('Skipping', scenario)
+        return
 
-# for db in [fn for fn in glob('output/scenarios/*/Alignment_SIMCOND.db') if re.match('.*tip_x=0um_y=(\+|-)\d+um(_sigma=0.2)?/.*', fn)]:
-for db in glob('output/scenarios/*/Alignment_SIMCOND.db'):
-    scenario_name = basename(dirname(db))
-
-    if any(j.comment.startswith(scenario_name+' reconstruction') for j in jobs):
-        print('Skipping', scenario_name)
-        continue
-
-    for i in range(10):
-        try:
-            brunel = get_brunel(custom_db=True)
-            did_submit = submit_job(brunel, scenario_name, input_files=[
-                join(os.getcwd(), 'output/DDDB.db'),
-                join(os.getcwd(), 'output/SIMCOND.db'),
-                join(os.getcwd(), db)
-            ])
-        except Exception:
-            print('Retrying', i)
-            jobs[-1].remove()
-        else:
-            if did_submit:
-                print('Submitted', scenario_name)
+    if scenario == 'Original_DB':
+        # Submit a job using the nominal tags directly
+        brunel = get_brunel(custom_db=False)
+        submit_job(brunel, 'Original_DB')
+    else:
+        # Keep retrying until the job actually submits
+        for i in range(10):
+            try:
+                brunel = get_brunel(custom_db=True)
+                did_submit = submit_job(brunel, scenario, input_files=[
+                    join(os.getcwd(), 'output/DDDB.db'),
+                    join(os.getcwd(), 'output/SIMCOND.db'),
+                    join(os.getcwd(), join('output/scenarios', scenario, 'Alignment_SIMCOND.db'))
+                ])
+            except Exception:
+                print('Retrying', i)
+                jobs[-1].remove()
             else:
-                print('Skipped', scenario_name)
-            break
+                if did_submit:
+                    print('Submitted', scenario)
+                else:
+                    print('Skipped', scenario)
+                break
+
+
+scenarios_to_submit = [
+    'Original_DB',
+    'tip_x=0um_y=-1000um',
+    'tip_x=0um_y=-1000um_sigma=0.5',
+    'tip_x=0um_y=-500um',
+    'tip_x=0um_y=-500um_sigma=0.5',
+    'tip_x=0um_y=-250um',
+    'tip_x=0um_y=-250um_sigma=0.5',
+    'tip_x=0um_y=+250um',
+    'tip_x=0um_y=+250um_sigma=0.5',
+    'tip_x=0um_y=+500um',
+    'tip_x=0um_y=+500um_sigma=0.5',
+    'tip_x=0um_y=+1000um',
+    'tip_x=0um_y=+1000um_sigma=0.5'
+]
+for scenario in scenarios_to_submit:
+    submit_scenario(scenario)

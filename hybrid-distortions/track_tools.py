@@ -166,15 +166,18 @@ class Track(object):
     def __init__(self, track):
         self._track = track
 
-    def fit_to_point(self, position):
+    def fit_to_point(self, position, minimise=True):
         state = self.state
         assert extrap.propagate(state, position.z())
-        traj = LineTraj(state.position(), state.slopes(), Range(-1000., 1000.))
-        residual = XYZVector()
-        s = ROOT.Double(0.1)
-        a = ROOT.Double(0.0005)
-        assert poca.minimize(traj, s, position, residual, a)
-        return traj.position(s), residual
+        if minimise:
+            traj = LineTraj(state.position(), state.slopes(), Range(-1000., 1000.))
+            residual = XYZVector()
+            s = ROOT.Double(0.1)
+            a = ROOT.Double(0.0005)
+            assert poca.minimize(traj, s, position, residual, a)
+            return traj.position(s), residual
+        else:
+            return state.position()
 
     @property
     def vp_hits(self):

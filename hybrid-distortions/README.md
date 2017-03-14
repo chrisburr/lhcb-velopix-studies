@@ -12,7 +12,7 @@ lb-run Ganga ganga
 # Edit make_resolution_plots.py to make the desired plots
 ./make_resolution_plots.py
 # And to make the msgpack files for running the notebook
-lb-run Panoramix/latest python read_xdst.py $SCENARIO
+lb-run Panoramix/latest python read_xdst.py $SCENARIO --job-id 0 --n-events 2000
 ```
 
 ## Useful links

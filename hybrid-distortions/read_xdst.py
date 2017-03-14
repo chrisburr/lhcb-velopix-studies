@@ -119,6 +119,11 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                 mc_particle_px, mc_particle_py, mc_particle_pz
             ])
 
+            # Insert a fake UT cluster
+            fake_ut_channel_id = -1 * (int(run_number*1e30) + int(event_number*1e15) + int(track_number*1e8) + 66666)
+            fake_position = track.fit_to_point(XYZPoint(0, 0, 2500), minimise=False)
+            clusters.append([run_number, event_number, fake_ut_channel_id, fake_position.x, fake_position.y, fake_position.z])
+
             # Store information about the associated clusters
             for hit in track.vp_hits:
                 hit_data = [

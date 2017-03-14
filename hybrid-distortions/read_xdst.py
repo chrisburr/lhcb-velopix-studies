@@ -27,7 +27,7 @@ from track_tools import Track
 
 
 def add_data(job_name, job_id):
-    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'hists', job_id, 'Brunel.xdst')))
+    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'hists', str(job_id), 'Brunel.xdst')))
 
     CondDB().Upgrade = True
     if job_name == 'Original_DB':

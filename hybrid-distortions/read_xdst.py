@@ -26,8 +26,8 @@ import track_tools
 from track_tools import Track
 
 
-def add_data(job_name):
-    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'xdsts/3.xdst')))
+def add_data(job_name, job_id):
+    IOHelper('ROOT').inputFiles(glob(join('output/scenarios', job_name, 'hists', job_id, 'Brunel.xdst')))
 
     CondDB().Upgrade = True
     if job_name == 'Original_DB':
@@ -63,12 +63,12 @@ def configure():
     appConf.TopAlg += [PreLoadPions, PreLoadKaons]
 
 
-def read_tracks_and_clusters(scenario, n_events):
-    add_data(scenario)
+def read_tracks_and_clusters(scenario, job_id, n_events):
+    add_data(scenario, job_id)
     configure()
     appMgr, evt = track_tools.initialise()
 
-    true_clusters_fn = 'output/scenarios/Original_DB/clusters.msg'
+    true_clusters_fn = 'output/scenarios/Original_DB/clusters_'+str(job_id)+'.msg'
     if isfile(true_clusters_fn) and scenario != 'Original_DB':
         true_clusters = pd.read_msgpack(true_clusters_fn)
     else:
@@ -165,13 +165,13 @@ def read_tracks_and_clusters(scenario, n_events):
     out_dir = join('output/scenarios', scenario)
 
     clusters = pd.DataFrame(clusters, columns=['run_number', 'event_number', 'channel_id', 'x', 'y', 'z'])
-    clusters.to_msgpack(join(out_dir, 'clusters.msg'))
+    clusters.to_msgpack(join(out_dir, 'clusters_'+str(job_id)+'.msg'))
 
     tracks = pd.DataFrame(tracks, columns=[
         'run_number', 'event_number', 'track_number', 'track_key', 'track_type',
         'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'
     ])
-    tracks.to_msgpack(join(out_dir, 'tracks.msg'))
+    tracks.to_msgpack(join(out_dir, 'tracks_'+str(job_id)+'.msg'))
 
     # TODO Prompt and charge information
     particles = pd.DataFrame(particles, columns=[
@@ -180,7 +180,7 @@ def read_tracks_and_clusters(scenario, n_events):
         'true_d0_vertex_x', 'true_d0_vertex_y', 'true_d0_vertex_z',
         'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'
     ])
-    particles.to_msgpack(join(out_dir, 'particles.msg'))
+    particles.to_msgpack(join(out_dir, 'particles_'+str(job_id)+'.msg'))
 
     residuals = pd.DataFrame(residuals, columns=[
         'run_number', 'event_number', 'track_number', 'cluster_channel_id',
@@ -188,7 +188,7 @@ def read_tracks_and_clusters(scenario, n_events):
         'intercept_x', 'intercept_y', 'intercept_z', 'residual_x', 'residual_y', 'residual_z',
         'true_intercept_x', 'true_intercept_y', 'true_intercept_z', 'true_residual_x', 'true_residual_y', 'true_residual_z',
     ])
-    residuals.to_msgpack(join(out_dir, 'residuals.msg'))
+    residuals.to_msgpack(join(out_dir, 'residuals_'+str(job_id)+'.msg'))
 
 
 if __name__ == '__main__':
@@ -199,9 +199,14 @@ if __name__ == '__main__':
         help='The reconstruction scenario to use'
     )
     parser.add_argument(
+        '--job-id', type=int, required=True,
+        help='The reconstruction scenario to use'
+    )
+
+    parser.add_argument(
         '--n-events', '-n', type=int, default=100,
         help='The reconstruction scenario to use'
     )
 
     args = parser.parse_args()
-    read_tracks_and_clusters(args.scenario, args.n_events)
+    read_tracks_and_clusters(args.scenario, args.job_id, args.n_events)

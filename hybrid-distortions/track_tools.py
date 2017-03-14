@@ -334,7 +334,7 @@ def fit_vertex(kp_track, km_track, pi_track):
             best_chi2 = chi2
             best_pv = pv
 
-    return D0, best_pv, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi
+    return D0, best_pv, best_chi2, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi
 
 
 def get_dstars():

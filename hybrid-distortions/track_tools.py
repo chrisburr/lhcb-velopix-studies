@@ -7,6 +7,8 @@ from math import atan2
 import GaudiPython
 import ROOT
 from LHCbMath import XYZPoint, XYZVector
+import LoKiAlgo.decorators
+from LoKiPhys.decorators import VIPCHI2
 from LinkerInstances.eventassoc import linkedTo
 GaudiPython.loaddict('libLinkerEvent')
 
@@ -30,7 +32,7 @@ state_to_use = {
 
 
 def initialise():
-    global appMgr, evt, poca, extrap, vertex_fitter
+    global appMgr, evt, poca, extrap, vertex_fitter, loki_algo
     appMgr = GaudiPython.AppMgr()
     evt = appMgr.evtsvc()
     poca = appMgr.toolsvc().create('TrajPoca', interface='ITrajPoca')
@@ -38,12 +40,14 @@ def initialise():
     # vertex_fitter = appMgr.toolsvc().create('OfflineVertexFitter', interface='IVertexFit')
     vertex_fitter = appMgr.toolsvc().create('LoKi::VertexFitter', interface='IVertexFit')
     run.n = -1
+    loki_algo = LoKiAlgo.decorators.Algo('loki_algo')
     return appMgr, evt
 
 
 def run(step=1):
     appMgr.run(1)
     get_clusters.clusters = None
+    get_pvs.pvs = None
     run.n += 1
     return run.n
 
@@ -56,6 +60,13 @@ def get_clusters():
             for c in evt['/Event/Raw/VP/Clusters']
         }
     return get_clusters.clusters.copy()
+
+
+def get_pvs():
+    # This is very slow so use aggressive caching
+    if get_pvs.pvs is None:
+        get_pvs.pvs = list(evt['/Event/Rec/Vertex/Primary'])
+    return list(get_pvs.pvs)
 
 
 class Cluster(object):
@@ -314,7 +325,16 @@ def fit_vertex(kp_track, km_track, pi_track):
     true = true_d0_vertex - true_dst_vertex
     fitted = d0_vertex.position() - true_d0_vertex
 
-    return D0, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi
+    best_chi2 = 1e1000
+    best_pv = None
+    func = VIPCHI2(D0, loki_algo.geo())
+    for pv in get_pvs():
+        chi2 = func(pv)
+        if best_chi2 > chi2:
+            best_chi2 = chi2
+            best_pv = pv
+
+    return D0, best_pv, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi
 
 
 def get_dstars():

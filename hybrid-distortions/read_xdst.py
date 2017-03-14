@@ -155,7 +155,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         # Add infromation about any truth matched particles we can find:
         for kp_track, km_track, pi_track in track_tools.get_dstars():
             try:
-                D0, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi = track_tools.fit_vertex(kp_track, km_track, pi_track)
+                D0, pv, d0_vertex, true_d0_vertex, true_dst_vertex, true, fitted, kp, km, pi = track_tools.fit_vertex(kp_track, km_track, pi_track)
             except ValueError:
                 pass
             else:
@@ -164,6 +164,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                     D0.momentum().x(), D0.momentum().y(), D0.momentum().z(),
                     d0_vertex.position().x(), d0_vertex.position().y(), d0_vertex.position().z(),
                     true_d0_vertex.x(), true_d0_vertex.y(), true_d0_vertex.z(),
+                    pv.position().x(), pv.position().y(), pv.position().z(),
                     true_dst_vertex.x(), true_dst_vertex.y(), true_dst_vertex.z()
                 ])
 
@@ -183,6 +184,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         'run_number', 'event_number', 'kp_track_key', 'km_track_key', 'pi_track_key', 'vertex_chi2', 'vertex_chi2_per_DoF',
         'D0_p_x', 'D0_p_y', 'D0_p_z', 'vertex_x', 'vertex_y', 'vertex_z',
         'true_d0_vertex_x', 'true_d0_vertex_y', 'true_d0_vertex_z',
+        'pv_x', 'pv_y', 'pv_z',
         'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'
     ])
     particles.to_msgpack(join(out_dir, 'particles_'+str(job_id)+'.msg'))

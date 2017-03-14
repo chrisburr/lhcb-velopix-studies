@@ -8,6 +8,7 @@ import GaudiPython
 import ROOT
 from LHCbMath import XYZPoint, XYZVector
 from LinkerInstances.eventassoc import linkedTo
+GaudiPython.loaddict('libLinkerEvent')
 
 LHCb = GaudiPython.gbl.LHCb
 LineTraj = LHCb.LineTraj
@@ -36,8 +37,6 @@ def initialise():
     extrap = appMgr.toolsvc().create('TrackParabolicExtrapolator', interface='ITrackExtrapolator')
     # vertex_fitter = appMgr.toolsvc().create('OfflineVertexFitter', interface='IVertexFit')
     vertex_fitter = appMgr.toolsvc().create('LoKi::VertexFitter', interface='IVertexFit')
-    # Because why not...
-    ROOT.gSystem.Load('/cvmfs/lhcb.cern.ch/lib/lhcb/LHCB/LHCB_v41r1/InstallArea/x86_64-slc6-gcc49-opt/lib/libLinkerEvent.so')
     run.n = -1
     return appMgr, evt
 

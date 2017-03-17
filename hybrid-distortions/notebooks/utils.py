@@ -35,7 +35,7 @@ def pairwise(iterable):
 def _load(df_name, scenarios):
     dfs = []
     for scenario in scenarios:
-        for i in range(10):
+        for i in range(1):
             df = pd.read_msgpack(f'output/scenarios/{scenario}/{df_name}_{i}.msg')
             df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
             dfs.append(df)
@@ -47,18 +47,19 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'])
         for scenario in glob('output/scenarios/*/particles_3.msg'):
             scenarios.append(scenario[len('output/scenarios/'):-len('/particles_3.msg')])
 
-    data = dict(Parallel(n_jobs=4, backend='threading')(
+    data = Parallel(n_jobs=4, backend='threading')(
         delayed(_load)(n, scenarios) for n in names
-    ))
+    )
+    data = dict(data)
 
     if 'residuals' in names:
-        data['residuals']['station'] = np.floor_divide(residuals.module, 2)
-        data['residuals']['station'] = residuals['station'].astype('category')
-        data['residuals'] = {k: v for k, v in residuals.groupby('scenario')}
+        data['residuals']['station'] = np.floor_divide(data['residuals'].module, 2)
+        data['residuals']['station'] = data['residuals']['station'].astype('category')
+        data['residuals'] = {k: v for k, v in data['residuals'].groupby('scenario')}
 
     if 'tracks' in names:
-        data['tracks'].track_type = list(map(lambda s: s.decode('utf-8'), tracks.track_type))
-        data['tracks'].track_type = tracks.track_type.astype('category')
+        data['tracks'].track_type = list(map(lambda s: s.decode('utf-8'), data['tracks'].track_type))
+        data['tracks'].track_type = data['tracks'].track_type.astype('category')
 
         data['tracks'].eval('p = sqrt(px**2 + py**2 + pz**2)', inplace=True)
         data['tracks'].eval('pt = sqrt(px**2 + py**2)', inplace=True)

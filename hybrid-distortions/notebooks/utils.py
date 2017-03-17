@@ -35,7 +35,7 @@ def pairwise(iterable):
 def _load(df_name, scenarios):
     dfs = []
     for scenario in scenarios:
-        for i in range(1):
+        for i in range(10):
             df = pd.read_msgpack(f'output/scenarios/{scenario}/{df_name}_{i}.msg')
             df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
             dfs.append(df)
@@ -71,6 +71,12 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'])
             '(vertex_x - pv_x)**2 + '
             '(vertex_y - pv_y)**2 + '
             '(vertex_z - pv_z)**2'
+        ')', inplace=True)
+
+        data['particles'].eval('half_true_fd = sqrt('
+            '(vertex_x - true_dst_vertex_x)**2 + '
+            '(vertex_y - true_dst_vertex_y)**2 + '
+            '(vertex_z - true_dst_vertex_z)**2'
         ')', inplace=True)
 
         data['particles'].eval('true_fd = sqrt('

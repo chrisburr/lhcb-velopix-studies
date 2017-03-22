@@ -64,12 +64,12 @@ def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
     xml = HEADER
     for i in range(52):
         rx = atan(x_distortion / 100000)
-        if sigma > 0 and rx > 0:
-            rx = gauss(rx, sigma*rx)
+        if sigma > 0:
+            rx = gauss(rx, sigma*abs(rx))
 
         ry = atan(y_distortion / 100000)
-        if sigma > 0 and ry > 0:
-            ry = gauss(ry, sigma*ry)
+        if sigma > 0:
+            ry = gauss(ry, sigma*abs(ry))
 
         rz = 0
 

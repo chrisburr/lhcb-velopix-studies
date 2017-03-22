@@ -1,6 +1,7 @@
 from glob import glob
 from itertools import tee
 from functools import wraps
+import os
 
 import numpy as np
 import pandas as pd
@@ -11,8 +12,21 @@ D0_mass = 1864.84
 speed_of_light = 299792458
 
 # Change the default settings for plotting
+# os.environ['PATH'] = '/pc2014-data3/cburr/texlive/2016/bin/x86_64-linux/:' + os.environ['PATH']
 # plt.rcParams['figure.dpi'] = 100
-plt.rcParams['figure.figsize'] = [9.0, 6.0]
+# plt.rcParams['figure.figsize'] = [9.0, 6.0]
+# plt.rcParams['font.family'] = 'sans-serif'
+# plt.rcParams['text.usetex'] = True
+# plt.rcParams['text.latex.unicode'] = True
+# plt.rcParams['text.latex.preamble'] = r"""
+# \usepackage[T1]{fontenc}
+# \usepackage{amsmath}
+# \usepackage{amsfonts}
+# \usepackage{amssymb}
+# \usepackage{tgheros}
+# \usepackage[tx]{sfmath}
+# \usepackage{siunitx}
+# """
 
 # Do some monkey patching to fix pandas/#15296
 if not hasattr(pd.read_msgpack, 'read_msgpack'):
@@ -32,23 +46,23 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
-def _load(df_name, scenarios):
+def _load(df_name, scenarios, n_files):
     dfs = []
     for scenario in scenarios:
-        for i in range(10):
+        for i in range(n_files):
             df = pd.read_msgpack(f'output/scenarios/{scenario}/{df_name}_{i}.msg')
             df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
             dfs.append(df)
     return df_name, pd.concat(dfs)
 
-def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles']):
+def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'], fast=False):
     if scenarios is None:
         scenarios = []
         for scenario in glob('output/scenarios/*/particles_3.msg'):
             scenarios.append(scenario[len('output/scenarios/'):-len('/particles_3.msg')])
 
     data = Parallel(n_jobs=4, backend='threading')(
-        delayed(_load)(n, scenarios) for n in names
+        delayed(_load)(n, scenarios, [10, 1][fast]) for n in names
     )
     data = dict(data)
 
@@ -89,3 +103,19 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'])
 
 
     return tuple([data[k] for k in names])
+
+def format_label(s):
+    if s == 'Original_DB':
+        return 'Nominal'
+    elif s.startswith('tip_x=0um_y='):
+        s = s[len('tip_x=0um_y='):]
+        s = s.split('_sigma=')
+        if len(s) == 2:
+            mu, sigma = s
+            sigma = f' $\sigma$ = {sigma}$\mu$m'
+        else:
+            mu, = s
+            sigma = ''
+        return f'$\mu$ = {mu[:-2]}$\mu$m{sigma}'
+    else:
+        raise ValueError(s)

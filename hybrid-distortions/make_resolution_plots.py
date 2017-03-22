@@ -217,16 +217,42 @@ def set_hist_range(name, hist):
 
 
 if __name__ == '__main__':
-    suffix = ''
     files = [
         (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
-        (join(base_dir, 'tip_x=0um_y=-10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=-10000um"+suffix),
-        (join(base_dir, 'tip_x=0um_y=+10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+10000um"+suffix),
+        (join(base_dir, 'tip_x=0um_y=-1000um/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=-1000um"),
+        (join(base_dir, 'tip_x=0um_y=-500um/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=-500um"),
+        (join(base_dir, 'tip_x=0um_y=-250um/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-250um"),
+        (join(base_dir, 'tip_x=0um_y=+250um/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+250um"),
+        (join(base_dir, 'tip_x=0um_y=+500um/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um"),
+        (join(base_dir, 'tip_x=0um_y=+1000um/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+1000um"),
     ]
-
-    out_dir = 'output/plots/lhcb_week/'
+    out_dir = 'output/plots/first_presentation/same/'
     make_resolution_plots(files,  out_dir)
     make_resolution_plots(files,  out_dir, log=True)
+
+    files = [
+        (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
+        (join(base_dir, 'tip_x=0um_y=-1000um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=-1000um_sigma=0.5"),
+        (join(base_dir, 'tip_x=0um_y=-500um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=-500um_sigma=0.5"),
+        (join(base_dir, 'tip_x=0um_y=-250um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-250um_sigma=0.5"),
+        (join(base_dir, 'tip_x=0um_y=+250um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+250um_sigma=0.5"),
+        (join(base_dir, 'tip_x=0um_y=+500um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um_sigma=0.5"),
+        (join(base_dir, 'tip_x=0um_y=+1000um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+1000um_sigma=0.5"),
+    ]
+    out_dir = 'output/plots/first_presentation/varied/'
+    make_resolution_plots(files,  out_dir)
+    make_resolution_plots(files,  out_dir, log=True)
+
+    # suffix = ''
+    # files = [
+    #     (join(base_dir, 'Nominal/hists/*/Brunel-histos.root'), (R.kBlack, 20), "Nominal"),
+    #     (join(base_dir, 'tip_x=0um_y=-10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=-10000um"+suffix),
+    #     (join(base_dir, 'tip_x=0um_y=+10000um'+suffix+'/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+10000um"+suffix),
+    # ]
+
+    # out_dir = 'output/plots/lhcb_week/'
+    # make_resolution_plots(files,  out_dir)
+    # make_resolution_plots(files,  out_dir, log=True)
 
     # for i in [None, '0.02', '0.05', '0.1', '0.2']:
     #     suffix = ['_sigma='+str(i), ''][i is None]

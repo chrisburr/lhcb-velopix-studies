@@ -113,20 +113,6 @@ def submit_scenario(scenario):
                 break
 
 
-scenarios_to_submit = [
-    'Original_DB',
-    'tip_x=0um_y=-1000um',
-    'tip_x=0um_y=-1000um_sigma=0.5',
-    'tip_x=0um_y=-500um',
-    'tip_x=0um_y=-500um_sigma=0.5',
-    'tip_x=0um_y=-250um',
-    'tip_x=0um_y=-250um_sigma=0.5',
-    'tip_x=0um_y=+250um',
-    'tip_x=0um_y=+250um_sigma=0.5',
-    'tip_x=0um_y=+500um',
-    'tip_x=0um_y=+500um_sigma=0.5',
-    'tip_x=0um_y=+1000um',
-    'tip_x=0um_y=+1000um_sigma=0.5'
-]
-for scenario in scenarios_to_submit:
+submit_scenario('Original_DB')
+for scenario in os.listdir('output/scenarios'):
     submit_scenario(scenario)

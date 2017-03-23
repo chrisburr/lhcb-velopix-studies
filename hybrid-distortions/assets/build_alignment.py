@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import argparse
 from random import gauss
-from math import atan
+from math import asin, cos
 from os import makedirs
 from os.path import dirname, isdir, join
 
@@ -62,20 +62,26 @@ def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
         makedirs(dirname(basedir))
 
     xml = HEADER
+    module_width = 100000
     for i in range(52):
-        rx = atan(x_distortion / 100000)
+        rx = asin(x_distortion / module_width)
         if sigma > 0:
             rx = gauss(rx, sigma*abs(rx))
 
-        ry = atan(y_distortion / 100000)
+        ry = asin(y_distortion / module_width)
         if sigma > 0:
             ry = gauss(ry, sigma*abs(ry))
 
         rz = 0
 
+        assert rx == rz == 0
+        x_over_reach = 22810
+        tx = - module_width/1000 * (1-cos(ry)) * (1-x_over_reach/module_width)
+        tz = - y_distortion/1000 * (1-x_over_reach/module_width)
+
         xml += MODULE.format(
             class_id=6, name='Module{i:02d}'.format(i=i),
-            tx=0, ty=0, tz=0,
+            tx=tx, ty=0, tz=tz,
             rx=rx, ry=ry, rz=rz
         )
     xml += FOOTER

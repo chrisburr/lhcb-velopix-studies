@@ -107,7 +107,7 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'],
     return tuple([data[k] for k in names])
 
 def format_label(s):
-    if s == 'Original_DB':
+    if s == 'Original_DB' or s == 'Nominal':
         return 'Nominal'
     elif s.startswith('tip_x=0um_y='):
         s = s[len('tip_x=0um_y='):]

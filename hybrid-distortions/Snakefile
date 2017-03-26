@@ -16,7 +16,7 @@ rule all:
 def make_input(s):
     matches = [
         re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
-        for fn in glob('output/scenarios/*/hists/0/Brunel.xdst')
+        for fn in glob('output/scenarios/*/hists/*/Brunel.xdst')
     ]
     for scenario, job_id in matches:
         yield f'output/scenarios/{scenario}/{s}_{job_id}.msg'
@@ -28,6 +28,22 @@ rule make_msgpacks:
         tracks_fn=make_input('tracks'),
         particles_fn=make_input('particles'),
         residuals_fn=make_input('residuals'),
+
+
+rule make_original_msgpacks_work:
+    input:
+        xdst_fn='output/scenarios/Original_DB/hists/{job_id}/Brunel.xdst',
+    output:
+        clusters_fn='output/scenarios/Original_DB/clusters_{job_id}.msg',
+        tracks_fn='output/scenarios/Original_DB/tracks_{job_id}.msg',
+        particles_fn='output/scenarios/Original_DB/particles_{job_id}.msg',
+        residuals_fn='output/scenarios/Original_DB/residuals_{job_id}.msg',
+    shell:
+        'set +u && '
+        'source activate python2.7 && '
+        'source /cvmfs/lhcb.cern.ch/group_login.sh && '
+        'lb-run Panoramix/latest python read_xdst.py "Original_DB" --job-id {wildcards.job_id} --n-events 2000 &&'
+        'set -u'
 
 
 rule make_msgpacks_work:
@@ -49,8 +65,8 @@ rule make_msgpacks_work:
 
 def make_input(fn):
     matches = [
-        re.match('output/scenarios/.+/SIMCOND_misaligned.db', fn).groups()
-        for fn in glob('output/scenarios/*/SIMCOND_misaligned.db')
+        re.match('output/scenarios/.+/Alignment_SIMCOND.db', fn).groups()
+        for fn in glob('output/scenarios/*/Alignment_SIMCOND.db')
     ]
     for scenario, in matches:
         yield f'output/scenarios/{scenario}/{fn}'
@@ -64,7 +80,7 @@ rule check_geometry:
 
 rule check_geometry_work:
     input:
-        simcond_layer_fn='output/scenarios/{scenario}/SIMCOND_misaligned.db'
+        simcond_layer_fn='output/scenarios/{scenario}/Alignment_SIMCOND.db'
     output:
         local_geo_fn='output/scenarios/{scenario}/local_geo.json',
         global_geo_fn='output/scenarios/{scenario}/global_geo.json',

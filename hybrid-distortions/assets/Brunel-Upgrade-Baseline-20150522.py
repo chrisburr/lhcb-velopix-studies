@@ -6,5 +6,5 @@ from Configurables import Brunel, CondDB
 
 CondDB().Upgrade = True
 
-Brunel().Detectors = ['VP', 'UT', 'FT', 'Rich1Pmt', 'Rich2Pmt', 'Ecal', 'Hcal', 'Muon', 'Magnet', 'Tr' ]
-Brunel().DataType     = "Upgrade"
+Brunel().Detectors = ['VP', 'UT', 'FT', 'Rich1Pmt', 'Rich2Pmt', 'Ecal', 'Hcal', 'Muon', 'Magnet', 'Tr']
+Brunel().DataType = "Upgrade"

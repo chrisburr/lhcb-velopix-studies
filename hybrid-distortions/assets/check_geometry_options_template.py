@@ -24,5 +24,5 @@ GaudiSequencer("CheckPatSeq").Members = [
 CondDB().addLayer(dbFile="output/DDDB.db", dbName="DDDB")
 CondDB().addLayer(dbFile="output/SIMCOND.db", dbName="SIMCOND")
 alignment_conditions = CondDBAccessSvc("AlignmentConditions")
-alignment_conditions.ConnectionString = "sqlite_file:output/scenarios/{{ scenario }}/SIMCOND_misaligned.db/SIMCOND"
+alignment_conditions.ConnectionString = "sqlite_file:output/scenarios/{{ scenario }}/Alignment_SIMCOND.db/SIMCOND"
 CondDB().addLayer(alignment_conditions)

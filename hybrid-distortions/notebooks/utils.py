@@ -51,17 +51,23 @@ def pairwise(iterable):
 def _load(df_name, scenarios, n_files):
     dfs = []
     for scenario in scenarios:
+        valid = False
         for i in range(n_files):
-            df = pd.read_msgpack(f'output/scenarios/{scenario}/{df_name}_{i}.msg')
-            df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
-            dfs.append(df)
+            fn = f'output/scenarios/{scenario}/{df_name}_{i}.msg'
+            if os.path.isfile(fn):
+                df = pd.read_msgpack(fn)
+                df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
+                dfs.append(df)
+                valid = True
+        if not valid:
+            raise ValueError(scenario, df_name)
     return df_name, pd.concat(dfs)
 
 def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'], fast=False):
     if scenarios is None:
         scenarios = []
-        for scenario in glob('output/scenarios/*/particles_3.msg'):
-            scenarios.append(scenario[len('output/scenarios/'):-len('/particles_3.msg')])
+        for scenario in glob('output/scenarios/*/particles_0.msg'):
+            scenarios.append(scenario[len('output/scenarios/'):-len('/particles_0.msg')])
 
     data = Parallel(n_jobs=4, backend='threading')(
         delayed(_load)(n, scenarios, [10, 1][fast]) for n in names

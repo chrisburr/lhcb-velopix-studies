@@ -1,6 +1,6 @@
 # [SublimeLinter flake8-max-line-length:120]
 from glob import glob
-from os.path import dirname, join
+from os.path import dirname, join, isfile
 import re
 
 wildcard_constraints:
@@ -11,13 +11,13 @@ wildcard_constraints:
 def make_input(s):
     matches = [
         re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
-        for fn in glob('output/scenarios/*/hists/0/Brunel.xdst')
+        for fn in glob(f'output/scenarios/Original_DB/hists/*/Brunel.xdst')
     ]
     for scenario, job_id in matches:
         yield f'output/scenarios/{scenario}/{s}_{job_id}.msg'
 
 
-rule make_msgpacks:
+rule make_original_msgpacks:
     input:
         clusters_fn=make_input('clusters'),
         tracks_fn=make_input('tracks'),
@@ -39,6 +39,32 @@ rule make_original_msgpacks_work:
         'source /cvmfs/lhcb.cern.ch/group_login.sh && '
         'lb-run Panoramix/latest python read_xdst.py "Original_DB" --job-id {wildcards.job_id} --n-events 2000 &&'
         'set -u'
+
+
+def get_valid_original_ids():
+    return list(zip(*[
+        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
+        for fn in glob('output/scenarios/Original_DB/hists/*/Brunel.xdst')
+    ]))[1]
+
+
+def make_input(s):
+    job_ids = get_valid_original_ids()
+    matches = [
+        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
+        for fn in glob('output/scenarios/*/hists/*/Brunel.xdst')
+    ]
+    for scenario, job_id in matches:
+        if job_id in job_ids:
+            yield f'output/scenarios/{scenario}/{s}_{job_id}.msg'
+
+
+rule make_msgpacks:
+    input:
+        clusters_fn=make_input('clusters'),
+        tracks_fn=make_input('tracks'),
+        particles_fn=make_input('particles'),
+        residuals_fn=make_input('residuals'),
 
 
 rule make_msgpacks_work:
@@ -123,7 +149,11 @@ def make_input():
         for fn in glob('output/scenarios/tip_x=0um_y=+*/Alignment_SIMCOND.db')
     ]
     for distortion, in matches:
-        yield f'output/tip_x=0um_y=-{distortion}_Nominal_tip_x=0um_y=+{distortion}/Further studies.ipynb'
+        if (
+            glob(f'output/scenarios/tip_x=0um_y=-{distortion}/clusters_*.msg') and
+            glob(f'output/scenarios/tip_x=0um_y=+{distortion}/clusters_*.msg')
+        ):
+            yield f'output/tip_x=0um_y=-{distortion}_Nominal_tip_x=0um_y=+{distortion}/Further studies.ipynb'
 
 
 rule make_further_studies:
@@ -132,15 +162,8 @@ rule make_further_studies:
 
 
 def make_input(scenario):
-    matches = [
-        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
-        for fn in glob(f'output/scenarios/{scenario}/hists/0/Brunel.xdst')
-    ]
-    for scenario, job_id in matches:
-        yield f'output/scenarios/{scenario}/clusters_{job_id}.msg'
-        yield f'output/scenarios/{scenario}/tracks_{job_id}.msg'
-        yield f'output/scenarios/{scenario}/particles_{job_id}.msg'
-        yield f'output/scenarios/{scenario}/residuals_{job_id}.msg'
+    for data_type in ['clusters', 'tracks', 'particles', 'residuals']:
+        yield f'output/scenarios/{scenario}/{data_type}_0.msg'
 
 
 rule make_further_studies_work:
@@ -165,4 +188,4 @@ rule all:
         rules.check_geometry.input,
         rules.make_geometry_plots.input,
         rules.make_msgpacks.input,
-        rules.make_further_studies_work.input,
+        rules.make_further_studies.input,

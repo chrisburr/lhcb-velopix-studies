@@ -79,6 +79,8 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
     residuals = []
     particles = []
 
+    write_msgpack.do_append = False
+
     while True:
         n_event = track_tools.run()
 
@@ -168,16 +170,29 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                     true_dst_vertex.x(), true_dst_vertex.y(), true_dst_vertex.z()
                 ])
 
+        # Store output every 10 events
+        if n_event % 10:
+            write_msgpack(scenario, job_id, clusters, tracks, particles, residuals)
+            # Clear the existing arrays
+            clusters = []
+            tracks = []
+            residuals = []
+            particles = []
+
+    write_msgpack(scenario, job_id, clusters, tracks, particles, residuals)
+
+
+def write_msgpack(scenario, job_id, clusters, tracks, particles, residuals):
     out_dir = join('output/scenarios', scenario)
 
     clusters = pd.DataFrame(clusters, columns=['run_number', 'event_number', 'channel_id', 'x', 'y', 'z'])
-    clusters.to_msgpack(join(out_dir, 'clusters_'+str(job_id)+'.msg'))
+    clusters.to_msgpack(join(out_dir, 'clusters_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
 
     tracks = pd.DataFrame(tracks, columns=[
         'run_number', 'event_number', 'track_number', 'track_key', 'track_type',
         'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'
     ])
-    tracks.to_msgpack(join(out_dir, 'tracks_'+str(job_id)+'.msg'))
+    tracks.to_msgpack(join(out_dir, 'tracks_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
 
     # TODO Prompt and charge information
     particles = pd.DataFrame(particles, columns=[
@@ -187,7 +202,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         'pv_x', 'pv_y', 'pv_z', 'pv_ipchi2',
         'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'
     ])
-    particles.to_msgpack(join(out_dir, 'particles_'+str(job_id)+'.msg'))
+    particles.to_msgpack(join(out_dir, 'particles_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
 
     residuals = pd.DataFrame(residuals, columns=[
         'run_number', 'event_number', 'track_number', 'cluster_channel_id',
@@ -195,7 +210,10 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         'intercept_x', 'intercept_y', 'intercept_z', 'residual_x', 'residual_y', 'residual_z',
         'true_intercept_x', 'true_intercept_y', 'true_intercept_z', 'true_residual_x', 'true_residual_y', 'true_residual_z',
     ])
-    residuals.to_msgpack(join(out_dir, 'residuals_'+str(job_id)+'.msg'))
+    residuals.to_msgpack(join(out_dir, 'residuals_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
+
+    # Append after the first write
+    write_msgpack.do_append = True
 
 
 if __name__ == '__main__':

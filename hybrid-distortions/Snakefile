@@ -1,0 +1,41 @@
+# [SublimeLinter flake8-max-line-length:120]
+from glob import glob
+from os.path import dirname, join
+import re
+
+wildcard_constraints:
+    job_id="\d+"
+
+
+def make_input(s):
+    matches = [
+        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
+        for fn in glob('output/scenarios/*/hists/0/Brunel.xdst')
+    ]
+    for scenario, job_id in matches:
+        yield f'output/scenarios/{scenario}/{s}_{job_id}.msg'
+
+
+rule make_msgpacks:
+    input:
+        clusters_fn=make_input('clusters'),
+        tracks_fn=make_input('tracks'),
+        particles_fn=make_input('particles'),
+        residuals_fn=make_input('residuals'),
+
+
+rule make_msgpacks_work:
+    input:
+        xdst_fn='output/scenarios/{scenario}/hists/{job_id}/Brunel.xdst',
+        original_clusters_fn='output/scenarios/Original_DB/clusters_{job_id}.msg',
+    output:
+        clusters_fn='output/scenarios/{scenario}/clusters_{job_id}.msg',
+        tracks_fn='output/scenarios/{scenario}/tracks_{job_id}.msg',
+        particles_fn='output/scenarios/{scenario}/particles_{job_id}.msg',
+        residuals_fn='output/scenarios/{scenario}/residuals_{job_id}.msg',
+    shell:
+        'set +u && '
+        'source activate python2.7 && '
+        'source /cvmfs/lhcb.cern.ch/group_login.sh && '
+        'lb-run Panoramix/latest python read_xdst.py "{wildcards.scenario}" --job-id {wildcards.job_id} --n-events 2000 &&'
+        'set -u'

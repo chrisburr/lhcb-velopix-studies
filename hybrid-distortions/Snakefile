@@ -9,9 +9,9 @@ wildcard_constraints:
 
 rule all:
     input:
-        rules.check_geometry.output,
-        rules.make_msgpacks.output,
-        rules.make_geometry_plots.output,
+        rules.check_geometry.input,
+        rules.make_geometry_plots.input,
+        rules.make_msgpacks.input,
 
 
 def make_input(s):

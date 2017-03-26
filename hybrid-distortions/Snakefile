@@ -7,6 +7,12 @@ wildcard_constraints:
     job_id="\d+"
 
 
+rule all:
+    input:
+        rules.check_geometry.output,
+        rules.make_msgpacks.output,
+
+
 def make_input(s):
     matches = [
         re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
@@ -38,4 +44,33 @@ rule make_msgpacks_work:
         'source activate python2.7 && '
         'source /cvmfs/lhcb.cern.ch/group_login.sh && '
         'lb-run Panoramix/latest python read_xdst.py "{wildcards.scenario}" --job-id {wildcards.job_id} --n-events 2000 &&'
+        'set -u'
+
+
+def make_input(fn):
+    matches = [
+        re.match('output/scenarios/.+/SIMCOND_misaligned.db', fn).groups()
+        for fn in glob('output/scenarios/*/SIMCOND_misaligned.db')
+    ]
+    for scenario, in matches:
+        yield f'output/scenarios/{scenario}/{fn}'
+
+
+rule check_geometry:
+    input:
+        local_geo_fn=make_input('local_geo.json'),
+        global_geo_fn=make_input('global_geo.json'),
+
+
+rule check_geometry_work:
+    input:
+        simcond_layer_fn='output/scenarios/{scenario}/SIMCOND_misaligned.db'
+    output:
+        local_geo_fn='output/scenarios/{scenario}/local_geo.json',
+        global_geo_fn='output/scenarios/{scenario}/global_geo.json',
+    shell:
+        'set +u && '
+        'source activate python2.7 && '
+        'source /cvmfs/lhcb.cern.ch/group_login.sh && '
+        'lb-run Brunel/v51r1 python make_velo_geometry_json.py "{wildcards.scenario}" &&'
         'set -u'

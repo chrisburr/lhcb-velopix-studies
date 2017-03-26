@@ -33,6 +33,8 @@ if not hasattr(pd.read_msgpack, 'read_msgpack'):
     @wraps(pd.read_msgpack)
     def read_msgpack(*args, **kwargs):
         df = read_msgpack.read_msgpack(*args, **kwargs)
+        if isinstance(df, list):
+            df = pd.concat(df)
         df.columns = [c.decode('utf-8') for c in df.columns]
         return df
 

@@ -112,9 +112,52 @@ rule make_geometry_plots_work:
     shell:
         'sed \'s#scenarios = \[.*\]#'
         'scenarios = [\\\\"tip_x=0um_y=-{wildcards.distortion}\\\\", \\\\"Nominal\\\\", \\\\"tip_x=0um_y=+{wildcards.distortion}\\\\"]#\' '
+        'notebooks/Module\ Positions.ipynb > "{output.nb_fn}" && '
+        'chdir notebooks && '
+        'runipy --no-chdir -o "../{output.nb_fn}"'
+
+
+def make_input():
+    matches = [
+        re.match('output/scenarios/tip_x=0um_y=\+(.*)/Alignment_SIMCOND.db', fn).groups()
+        for fn in glob('output/scenarios/tip_x=0um_y=+*/Alignment_SIMCOND.db')
+    ]
+    for distortion, in matches:
+        yield f'output/tip_x=0um_y=-{distortion}_Nominal_tip_x=0um_y=+{distortion}/Module Positions.ipynb'
+
+
+rule make_further_studies:
+    input:
+        make_input()
+
+
+def make_input(scenario):
+    matches = [
+        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
+        for fn in glob(f'output/scenarios/{scenario.replace("{distortion}", "*")}/hists/0/Brunel.xdst')
+    ]
+    for scenario, job_id in matches:
+        yield f'output/scenarios/{scenario}/clusters_{job_id}.msg'
+        yield f'output/scenarios/{scenario}/tracks_{job_id}.msg'
+        yield f'output/scenarios/{scenario}/particles_{job_id}.msg'
+        yield f'output/scenarios/{scenario}/residuals_{job_id}.msg'
+
+
+rule make_further_studies_work:
+    input:
+        'notebooks/Further studies.ipynb',
+        make_input('Nominal'),
+        make_input('tip_x=0um_y=+{distortion}'),
+        make_input('tip_x=0um_y=-{distortion}'),
+    output:
+        nb_fn='output/tip_x=0um_y=-{distortion}_Nominal_tip_x=0um_y=+{distortion}/Further studies.ipynb'
+    shell:
+        'sed \'s#scenarios = \[.*\]#'
+        'scenarios = [\\\\"tip_x=0um_y=-{wildcards.distortion}\\\\", \\\\"Nominal\\\\", \\\\"tip_x=0um_y=+{wildcards.distortion}\\\\"]#\' '
         'notebooks/Module\ Positions.ipynb > '
-        '"output/tip_x=0um_y=-{wildcards.distortion}_Nominal_tip_x=0um_y=+{wildcards.distortion}/Module Positions.ipynb" &&'
-        'runipy --no-chdir -o "{output.nb_fn}"'
+        '"{output.nb_fn}" && '
+        'chdir notebooks && '
+        'runipy --no-chdir -o "../{output.nb_fn}"'
 
 
 rule all:
@@ -122,3 +165,4 @@ rule all:
         rules.check_geometry.input,
         rules.make_geometry_plots.input,
         rules.make_msgpacks.input,
+        rules.make_further_studies_work.input,

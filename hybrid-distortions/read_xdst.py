@@ -71,6 +71,8 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
     true_clusters_fn = 'output/scenarios/Original_DB/clusters_'+str(job_id)+'.msg'
     if isfile(true_clusters_fn) and scenario != 'Original_DB':
         true_clusters = pd.read_msgpack(true_clusters_fn)
+        if isinstance(true_clusters, list):
+            true_clusters = pd.concat(true_clusters)
     else:
         true_clusters = None
 

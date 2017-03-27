@@ -226,7 +226,7 @@ if __name__ == '__main__':
         (join(base_dir, 'tip_x=0um_y=+500um/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um"),
         (join(base_dir, 'tip_x=0um_y=+1000um/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+1000um"),
     ]
-    out_dir = 'output/plots/first_presentation/same/'
+    out_dir = 'output/plots/first_presentation_fixed/same/'
     make_resolution_plots(files,  out_dir)
     make_resolution_plots(files,  out_dir, log=True)
 
@@ -239,7 +239,7 @@ if __name__ == '__main__':
         (join(base_dir, 'tip_x=0um_y=+500um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um_sigma=0.5"),
         (join(base_dir, 'tip_x=0um_y=+1000um_sigma=0.5/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+1000um_sigma=0.5"),
     ]
-    out_dir = 'output/plots/first_presentation/varied/'
+    out_dir = 'output/plots/first_presentation_fixed/varied/'
     make_resolution_plots(files,  out_dir)
     make_resolution_plots(files,  out_dir, log=True)
 

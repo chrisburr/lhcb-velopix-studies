@@ -55,10 +55,13 @@ def _load(df_name, scenarios, n_files):
         for i in range(n_files):
             fn = f'output/scenarios/{scenario}/{df_name}_{i}.msg'
             if os.path.isfile(fn):
+                print('Found', fn)
                 df = pd.read_msgpack(fn)
                 df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
                 dfs.append(df)
                 valid = True
+            else:
+                print('Skipping', fn)
         if not valid:
             raise ValueError(scenario, df_name)
     return df_name, pd.concat(dfs)

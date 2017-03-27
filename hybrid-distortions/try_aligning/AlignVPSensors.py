@@ -94,10 +94,14 @@ elements.VPModules("TxTyTzRxRyRz")
 constraints = ["Tx", "Ty", "Szx", "Szy", "Rz", "SRz"]
 
 # constraints = []
-constraints.append("VPFixModule10 : VP/VPLeft/Module10WithSupport: Tx Ty Tz Rx Ry Rz")
-constraints.append("VPFixModule11 : VP/VPRight/Module11WithSupport: Tx Ty Tz Rx Ry Rz")
+# constraints.append("VPFixModule10 : VP/VPLeft/Module10WithSupport: Tx Ty Tz Rx Ry Rz")
+# constraints.append("VPFixModule11 : VP/VPRight/Module11WithSupport: Tx Ty Tz Rx Ry Rz")
+# constraints.append("VPFixModule40 : VP/VPLeft/Module40WithSupport: Tx Ty Tz Rx Ry Rz")
+# constraints.append("VPFixModule41 : VP/VPRight/Module41WithSupport: Tx Ty Tz Rx Ry Rz")
 constraints.append("VPFixModule40 : VP/VPLeft/Module40WithSupport: Tx Ty Tz Rx Ry Rz")
 constraints.append("VPFixModule41 : VP/VPRight/Module41WithSupport: Tx Ty Tz Rx Ry Rz")
+constraints.append("VPFixModule50 : VP/VPLeft/Module50WithSupport: Tx Ty Tz Rx Ry Rz")
+constraints.append("VPFixModule51 : VP/VPRight/Module51WithSupport: Tx Ty Tz Rx Ry Rz")
 # constraints = []
 print "aligning elements ", elements
 trackRefitSeq = GaudiSequencer("TrackRefitSeq")
@@ -226,9 +230,9 @@ IOHelper('ROOT').inputFiles([
     'PFN:root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000010_1.xdigi',
     # 'PFN:file:///storage/gpfs_lhcb/lhcb/disk/MC/Upgrade/XDIGI/00052242/0000/00052242_00000046_1.xdigi',
     # 'PFN:root://clhcbstager.ads.rl.ac.uk//castor/ads.rl.ac.uk/prod/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000017_1.xdigi?svcClass=lhcbDst',
-    'PFN:root://lhcb-sdpd13.t1.grid.kiae.ru:1094/t1.grid.kiae.ru/data/lhcb/lhcbdisk/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000008_1.xdigi',
-    'PFN:root://clhcbstager.ads.rl.ac.uk//castor/ads.rl.ac.uk/prod/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000040_1.xdigi?svcClass=lhcbDst',
-    'PFN:root://lhcb-sdpd13.t1.grid.kiae.ru:1094/t1.grid.kiae.ru/data/lhcb/lhcbdisk/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000029_1.xdigi',
+    # 'PFN:root://lhcb-sdpd13.t1.grid.kiae.ru:1094/t1.grid.kiae.ru/data/lhcb/lhcbdisk/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000008_1.xdigi',
+    # 'PFN:root://clhcbstager.ads.rl.ac.uk//castor/ads.rl.ac.uk/prod/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000040_1.xdigi?svcClass=lhcbDst',
+    # 'PFN:root://lhcb-sdpd13.t1.grid.kiae.ru:1094/t1.grid.kiae.ru/data/lhcb/lhcbdisk/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000029_1.xdigi',
     'PFN:root://lhcb-sdpd17.t1.grid.kiae.ru:1094/t1.grid.kiae.ru/data/lhcb/lhcbdisk/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000055_1.xdigi',
     # 'PFN:file:///storage/gpfs_lhcb/lhcb/disk/MC/Upgrade/XDIGI/00052242/0000/00052242_00000033_1.xdigi',
     'PFN:root://ccdcacli067.in2p3.fr:1094/pnfs/in2p3.fr/data/lhcb/MC/Upgrade/XDIGI/00052242/0000/00052242_00000031_1.xdigi',

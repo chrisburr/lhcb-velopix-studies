@@ -222,6 +222,8 @@ if __name__ == '__main__':
         (join(base_dir, 'tip_x=0um_y=-1000um/hists/*/Brunel-histos.root'), (R.kYellow+1, 20), "tip_x=0um_y=-1000um"),
         (join(base_dir, 'tip_x=0um_y=-500um/hists/*/Brunel-histos.root'), (R.kMagenta, 20), "tip_x=0um_y=-500um"),
         (join(base_dir, 'tip_x=0um_y=-250um/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-250um"),
+        (join(base_dir, 'tip_x=0um_y=-100um/hists/*/Brunel-histos.root'), (R.kOrange, 20), "tip_x=0um_y=-100um"),
+        (join(base_dir, 'tip_x=0um_y=+100um/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+100um"),
         (join(base_dir, 'tip_x=0um_y=+250um/hists/*/Brunel-histos.root'), (R.kGreen+3, 20), "tip_x=0um_y=+250um"),
         (join(base_dir, 'tip_x=0um_y=+500um/hists/*/Brunel-histos.root'), (R.kBlue, 20), "tip_x=0um_y=+500um"),
         (join(base_dir, 'tip_x=0um_y=+1000um/hists/*/Brunel-histos.root'), (R.kRed, 20), "tip_x=0um_y=+1000um"),

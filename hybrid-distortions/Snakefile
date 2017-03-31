@@ -42,10 +42,13 @@ rule make_original_msgpacks_work:
 
 
 def get_valid_original_ids():
-    return list(zip(*[
-        re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
-        for fn in glob('output/scenarios/Original_DB/hists/*/Brunel.xdst')
-    ]))[1]
+    try:
+        return list(zip(*[
+            re.match('output/scenarios/(.+)/hists/(\d+)/Brunel.xdst', fn).groups()
+            for fn in glob('output/scenarios/Original_DB/hists/*/Brunel.xdst')
+        ]))[1]
+    except Exception:
+        return []
 
 
 def make_input(s):
@@ -139,7 +142,7 @@ rule make_geometry_plots_work:
         'sed \'s#scenarios = \[.*\]#'
         'scenarios = [\\\\"tip_x=0um_y=-{wildcards.distortion}\\\\", \\\\"Nominal\\\\", \\\\"tip_x=0um_y=+{wildcards.distortion}\\\\"]#\' '
         '"{input.nb_fn}" > "{output.nb_fn}" && '
-        'chdir notebooks && '
+        'cd notebooks && '
         'runipy --no-chdir -o "../{output.nb_fn}"'
 
 

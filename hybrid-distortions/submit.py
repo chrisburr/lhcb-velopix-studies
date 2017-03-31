@@ -12,7 +12,7 @@ from Ganga.GPI import (
 BOOKEEPING_PATH = "/MC/Upgrade/Beam7000GeV-Upgrade-MagDown-Nu7.6-Pythia8/Sim09a-Upgrade/27163002/XDIGI"  # NOQA
 RUN_LOCAL = False
 
-dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()[:10]
+dataset = BKQuery(path=BOOKEEPING_PATH).getDataset()
 
 
 def get_brunel(custom_db=False):

@@ -8,13 +8,14 @@ function make_scenario_with_sigma {
     X_DIST="$2"
     Y_DIST="$3"
     SIGMA="$4"
+    ALTERNATE="$5"
 
     if [ ! -d "output/scenarios/$SCENARIO" ]; then
         ./assets/build_alignment.py \
             --basedir="output/scenarios/$SCENARIO" \
             --x-distortion="$X_DIST" \
             --y-distortion="$Y_DIST" \
-            --sigma="$SIGMA"
+            --sigma="$SIGMA" $ALTERNATE
 
         lb-run LHCb/latest copy_files_to_db.py \
             -c "sqlite_file:output/scenarios/$SCENARIO/Alignment_SIMCOND.db/SIMCOND" \
@@ -135,28 +136,34 @@ function make_scenario {
 # make_scenario "tip_x=-2000um_y=-2000um" -2000 -2000
 # make_scenario "tip_x=-2000um_y=-10000um" -2000 -10000
 
-make_scenario_with_sigma "Nominal" 0 0 0
+make_scenario_with_sigma "Nominal" 0 0 0 ""
 
-make_scenario_with_sigma "tip_x=0um_y=-1000um" 0 -1000 0
-make_scenario_with_sigma "tip_x=0um_y=-1000um_sigma=0.5" 0 -1000 0.5
+make_scenario_with_sigma "tip_x=0um_y=-1000um" 0 -1000 0 ""
+make_scenario_with_sigma "tip_x=0um_y=-1000um_sigma=0.5" 0 -1000 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=-500um" 0 -500 0
-make_scenario_with_sigma "tip_x=0um_y=-500um_sigma=0.5" 0 -500 0.5
+make_scenario_with_sigma "tip_x=0um_y=-500um" 0 -500 0 ""
+make_scenario_with_sigma "tip_x=0um_y=-500um_sigma=0.5" 0 -500 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=-250um" 0 -250 0
-make_scenario_with_sigma "tip_x=0um_y=-250um_sigma=0.5" 0 -250 0.5
+make_scenario_with_sigma "tip_x=0um_y=-250um" 0 -250 0 ""
+make_scenario_with_sigma "tip_x=0um_y=-250um_sigma=0.5" 0 -250 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=-100um" 0 -100 0
-make_scenario_with_sigma "tip_x=0um_y=-100um_sigma=0.5" 0 -100 0.5
+make_scenario_with_sigma "tip_x=0um_y=-100um" 0 -100 0 ""
+make_scenario_with_sigma "tip_x=0um_y=-100um_sigma=0.5" 0 -100 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=+100um" 0 100 0
-make_scenario_with_sigma "tip_x=0um_y=+100um_sigma=0.5" 0 100 0.5
+make_scenario_with_sigma "tip_x=0um_y=+100um" 0 100 0 ""
+make_scenario_with_sigma "tip_x=0um_y=+100um_sigma=0.5" 0 100 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=+250um" 0 250 0
-make_scenario_with_sigma "tip_x=0um_y=+250um_sigma=0.5" 0 250 0.5
+make_scenario_with_sigma "tip_x=0um_y=+250um" 0 250 0 ""
+make_scenario_with_sigma "tip_x=0um_y=+250um_sigma=0.5" 0 250 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=+500um" 0 500 0
-make_scenario_with_sigma "tip_x=0um_y=+500um_sigma=0.5" 0 500 0.5
+make_scenario_with_sigma "tip_x=0um_y=+500um" 0 500 0 ""
+make_scenario_with_sigma "tip_x=0um_y=+500um_sigma=0.5" 0 500 0.5 ""
 
-make_scenario_with_sigma "tip_x=0um_y=+1000um" 0 1000 0
-make_scenario_with_sigma "tip_x=0um_y=+1000um_sigma=0.5" 0 1000 0.5
+make_scenario_with_sigma "tip_x=0um_y=+1000um" 0 1000 0 ""
+make_scenario_with_sigma "tip_x=0um_y=+1000um_sigma=0.5" 0 1000 0.5 ""
+
+make_scenario_with_sigma "tip_x=0um_y=+1000um_alternate" 0 1000 0 "--alternate"
+make_scenario_with_sigma "tip_x=0um_y=+1000um_sigma=0.5_alternate" 0 1000 0.5 "--alternate"
+
+make_scenario_with_sigma "tip_x=0um_y=-1000um_alternate" 0 -1000 0 "--alternate"
+make_scenario_with_sigma "tip_x=0um_y=-1000um_sigma=0.5_alternate" 0 -1000 0.5 "--alternate"

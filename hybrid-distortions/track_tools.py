@@ -2,13 +2,13 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import defaultdict
-from math import atan2
+from math import atan2, sqrt
 
 import GaudiPython
 import ROOT
 from LHCbMath import XYZPoint, XYZVector
 import LoKiAlgo.decorators
-from LoKiPhys.decorators import VIPCHI2
+from LoKiPhys.decorators import VIPCHI2, TRACKFROMPV
 from LinkerInstances.eventassoc import linkedTo
 GaudiPython.loaddict('libLinkerEvent')
 
@@ -255,6 +255,35 @@ class Track(object):
     @property
     def key(self):
         return self._track.key()
+
+    @property
+    def ip(self):
+        # Find the PV
+        best_distance = 1e1000
+        best_pv = None
+        for pv in get_pvs():
+            state = self.state
+            assert extrap.propagate(state, pv.position().z())
+            dist = sqrt(
+                (state.x() - pv.position().x())**2 +
+                (state.y() - pv.position().y())**2
+            )
+            if dist < best_distance:
+                best_distance = dist
+                best_pv = pv
+        assert best_pv
+
+        first_state = self._track.firstState()
+        true_origin = best_pv.position()
+        # Here I use TrackParabolicExtrapolator instead of
+        # CubicStateInterpolationTraj
+        assert extrap.propagate(first_state, true_origin.z())
+        tx = first_state.tx()
+        ty = first_state.ty()
+        IPx = first_state.x() - true_origin.x()
+        IPy = first_state.y() - true_origin.y()
+        IP3D = sqrt((IPx*IPx + IPy*IPy) / (1 + tx*tx + ty*ty))
+        return IP3D, IPx, IPy
 
 
 class MCParticle(object):

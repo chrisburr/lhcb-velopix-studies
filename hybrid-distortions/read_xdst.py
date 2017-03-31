@@ -117,10 +117,13 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                 mc_particle_py = mc_particle.py
                 mc_particle_pz = mc_particle.pz
 
+            IP3D, IPx, IPy = track.ip
+
             tracks.append([
                 run_number, event_number, track_number, track.key, track.track_type,
                 track.rx, track.ry, track.px, track.py, track.pz,
-                mc_particle_px, mc_particle_py, mc_particle_pz
+                mc_particle_px, mc_particle_py, mc_particle_pz,
+                IP3D, IPx, IPy
             ])
 
             # Insert a fake UT cluster
@@ -163,9 +166,10 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
             except ValueError:
                 pass
             else:
+                D0_mc = kp_track.mc_particle.mother
                 particles.append([
                     run_number, event_number, kp_track.key, km_track.key, pi_track.key, d0_vertex.chi2(), d0_vertex.chi2PerDoF(),
-                    D0.momentum().x(), D0.momentum().y(), D0.momentum().z(),
+                    D0.momentum().x(), D0.momentum().y(), D0.momentum().z(), D0_mc.px, D0_mc.py, D0_mc.pz,
                     d0_vertex.position().x(), d0_vertex.position().y(), d0_vertex.position().z(),
                     true_d0_vertex.x(), true_d0_vertex.y(), true_d0_vertex.z(),
                     pv.position().x(), pv.position().y(), pv.position().z(), pv_ipchi2,
@@ -192,14 +196,14 @@ def write_msgpack(scenario, job_id, clusters, tracks, particles, residuals):
 
     tracks = pd.DataFrame(tracks, columns=[
         'run_number', 'event_number', 'track_number', 'track_key', 'track_type',
-        'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz'
+        'tx', 'ty', 'px', 'py', 'pz', 'true_px', 'true_py', 'true_pz', 'IP3D', 'IPx', 'IPy'
     ])
     tracks.to_msgpack(join(out_dir, 'tracks_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
 
     # TODO Prompt and charge information
     particles = pd.DataFrame(particles, columns=[
         'run_number', 'event_number', 'kp_track_key', 'km_track_key', 'pi_track_key', 'vertex_chi2', 'vertex_chi2_per_DoF',
-        'D0_p_x', 'D0_p_y', 'D0_p_z', 'vertex_x', 'vertex_y', 'vertex_z',
+        'D0_p_x', 'D0_p_y', 'D0_p_z', 'D0_true_p_x', 'D0_true_p_y', 'D0_true_p_z', 'vertex_x', 'vertex_y', 'vertex_z',
         'true_d0_vertex_x', 'true_d0_vertex_y', 'true_d0_vertex_z',
         'pv_x', 'pv_y', 'pv_z', 'pv_ipchi2',
         'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'

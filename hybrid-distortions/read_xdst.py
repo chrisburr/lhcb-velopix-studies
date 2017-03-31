@@ -167,13 +167,19 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                 pass
             else:
                 D0_mc = kp_track.mc_particle.mother
+                kp_mc = kp_track.mc_particle
+                km_mc = km_track.mc_particle
+                pi_mc = pi_track.mc_particle
                 particles.append([
                     run_number, event_number, kp_track.key, km_track.key, pi_track.key, d0_vertex.chi2(), d0_vertex.chi2PerDoF(),
                     D0.momentum().x(), D0.momentum().y(), D0.momentum().z(), D0_mc.px, D0_mc.py, D0_mc.pz,
                     d0_vertex.position().x(), d0_vertex.position().y(), d0_vertex.position().z(),
                     true_d0_vertex.x(), true_d0_vertex.y(), true_d0_vertex.z(),
                     pv.position().x(), pv.position().y(), pv.position().z(), pv_ipchi2,
-                    true_dst_vertex.x(), true_dst_vertex.y(), true_dst_vertex.z()
+                    true_dst_vertex.x(), true_dst_vertex.y(), true_dst_vertex.z(),
+                    kp_track.px, kp_track.py, kp_track.pz, kp_mc.px, kp_mc.py, kp_mc.pz,
+                    km_track.px, km_track.py, km_track.pz, km_mc.px, km_mc.py, km_mc.pz,
+                    pi_track.px, pi_track.py, pi_track.pz, pi_mc.px, pi_mc.py, pi_mc.pz,
                 ])
 
         # Store output every 10 events
@@ -206,7 +212,10 @@ def write_msgpack(scenario, job_id, clusters, tracks, particles, residuals):
         'D0_p_x', 'D0_p_y', 'D0_p_z', 'D0_true_p_x', 'D0_true_p_y', 'D0_true_p_z', 'vertex_x', 'vertex_y', 'vertex_z',
         'true_d0_vertex_x', 'true_d0_vertex_y', 'true_d0_vertex_z',
         'pv_x', 'pv_y', 'pv_z', 'pv_ipchi2',
-        'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z'
+        'true_dst_vertex_x', 'true_dst_vertex_y', 'true_dst_vertex_z',
+        'kp_px', 'kp_py', 'kp_pz', 'kp_true_px', 'kp_true_py', 'kp_true_pz',
+        'km_px', 'km_py', 'km_pz', 'km_true_px', 'km_true_py', 'km_true_pz',
+        'pi_px', 'pi_py', 'pi_pz', 'pi_true_px', 'pi_true_py', 'pi_true_pz',
     ])
     particles.to_msgpack(join(out_dir, 'particles_'+str(job_id)+'.msg'), append=write_msgpack.do_append)
 

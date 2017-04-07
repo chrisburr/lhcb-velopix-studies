@@ -8,7 +8,7 @@ import GaudiPython
 import ROOT
 from LHCbMath import XYZPoint, XYZVector
 import LoKiAlgo.decorators
-from LoKiPhys.decorators import VIPCHI2, TRACKFROMPV
+from LoKiPhys.decorators import VIPCHI2
 from LinkerInstances.eventassoc import linkedTo
 GaudiPython.loaddict('libLinkerEvent')
 
@@ -29,6 +29,28 @@ state_to_use = {
     LHCb.Track.Ttrack: LHCb.State.FirstMeasurement,
     LHCb.Track.Upstream: LHCb.State.FirstMeasurement,
 }
+
+
+class cached_property(object):
+    """Descriptor (non-data) for building an attribute on-demand on first use.
+
+    Taken from: http://stackoverflow.com/a/4037979/2685230
+    """
+    def __init__(self, factory):
+        """
+        <factory> is called such: factory(instance) to build the attribute.
+        """
+        self._attr_name = factory.__name__
+        self._factory = factory
+
+    def __get__(self, instance, owner):
+        # Build the attribute.
+        attr = self._factory(instance)
+
+        # Cache the value; hide ourselves.
+        setattr(instance, self._attr_name, attr)
+
+        return attr
 
 
 def initialise():
@@ -74,19 +96,19 @@ class Cluster(object):
     def __init__(self, cluster):
         self._cluster = cluster
 
-    @property
+    @cached_property
     def channel_id(self):
         return self._cluster.channelID().channelID()
 
-    @property
+    @cached_property
     def x(self):
         return self._cluster.x()
 
-    @property
+    @cached_property
     def y(self):
         return self._cluster.y()
 
-    @property
+    @cached_property
     def z(self):
         return self._cluster.z()
 
@@ -113,7 +135,7 @@ class VPHit(Hit):
         super(VPHit, self).__init__(hit, track)
         assert self._hit.isVP()
 
-    @property
+    @cached_property
     def vp_id(self):
         try:
             return self._vp_id
@@ -121,39 +143,39 @@ class VPHit(Hit):
             self._vp_id = self._hit.vpID()
             return self._vp_id
 
-    @property
+    @cached_property
     def cluster(self):
         return get_clusters()[self.vp_id.channelID()]
 
-    @property
+    @cached_property
     def sidepos(self):
         return self.vp_id.sidepos()
 
-    @property
+    @cached_property
     def module(self):
         return self.vp_id.module()
 
-    @property
+    @cached_property
     def sensor(self):
         return self.vp_id.sensor()
 
-    @property
+    @cached_property
     def station(self):
         return self.vp_id.station()
 
-    @property
+    @cached_property
     def chip(self):
         return self.vp_id.chip()
 
-    @property
+    @cached_property
     def row(self):
         return self.vp_id.row()
 
-    @property
+    @cached_property
     def col(self):
         return self.vp_id.col()
 
-    @property
+    @cached_property
     def scol(self):
         return self.vp_id.scol()
 
@@ -194,11 +216,11 @@ class Track(object):
     def vp_hits(self):
         return [h for h in self.hits if isinstance(h, VPHit)]
 
-    @property
+    @cached_property
     def track_type(self):
         return LHCb.Track.TypesToString(self._track.type())
 
-    @property
+    @cached_property
     def mc_particle(self):
         track_to_mc = linkedTo(LHCb.MCParticle, LHCb.Track, 'Rec/Track/Best')
         if track_to_mc.range(self._track).size() == 1:
@@ -222,41 +244,41 @@ class Track(object):
     def state(self):
         return self._track.stateAt(state_to_use[self._track.type()]).clone()
 
-    @property
+    @cached_property
     def rx(self):
         slope = self.state.slopes()
         return atan2(slope.x(), slope.z())
 
-    @property
+    @cached_property
     def ry(self):
         slope = self.state.slopes()
         return atan2(slope.y(), slope.z())
 
-    @property
+    @cached_property
     def p(self):
         return self._track.p()
 
-    @property
+    @cached_property
     def pt(self):
         return self._track.pt()
 
-    @property
+    @cached_property
     def px(self):
         return self._track.momentum().x()
 
-    @property
+    @cached_property
     def py(self):
         return self._track.momentum().y()
 
-    @property
+    @cached_property
     def pz(self):
         return self._track.momentum().z()
 
-    @property
+    @cached_property
     def key(self):
         return self._track.key()
 
-    @property
+    @cached_property
     def ip(self):
         # Find the PV
         best_distance = 1e1000
@@ -296,23 +318,23 @@ class MCParticle(object):
             return self._mc_particle == other._mc_particle
         return False
 
-    @property
+    @cached_property
     def px(self):
         return self._mc_particle.momentum().x()
 
-    @property
+    @cached_property
     def py(self):
         return self._mc_particle.momentum().y()
 
-    @property
+    @cached_property
     def pz(self):
         return self._mc_particle.momentum().z()
 
-    @property
+    @cached_property
     def pid(self):
         return self._mc_particle.particleID().pid()
 
-    @property
+    @cached_property
     def mother(self):
         mother = self._mc_particle.mother()
         if mother:
@@ -320,11 +342,11 @@ class MCParticle(object):
         else:
             raise ValueError('No mother found')
 
-    @property
+    @cached_property
     def origin_vertex(self):
         return self._mc_particle.originVertex().position()
 
-    @property
+    @cached_property
     def end_vertices(self):
         return [v.target().position() for v in self._mc_particle.endVertices()]
 
@@ -336,9 +358,10 @@ def fit_vertex(kp_track, km_track, pi_track):
             pi = p
 
     for p in evt['Phys/PreLoadKaons/Particles']:
-        if p.proto().track().key() == kp_track.key:
+        p_key = p.proto().track().key()
+        if p_key == kp_track.key:
             kp = p
-        if p.proto().track().key() == km_track.key:
+        elif p_key == km_track.key:
             km = p
 
     if kp is None or km is None:

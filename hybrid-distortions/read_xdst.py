@@ -12,6 +12,7 @@ import sys
 # Create using 'pip install --target my_pandas pandas'
 sys.path.insert(0, os.path.abspath('./my_pandas/'))  # NOQA
 import pandas as pd
+from tqdm import tqdm
 
 from Configurables import CondDB
 from Configurables import CondDBAccessSvc
@@ -63,7 +64,7 @@ def configure():
     appConf.TopAlg += [PreLoadPions, PreLoadKaons]
 
 
-def read_tracks_and_clusters(scenario, job_id, n_events):
+def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
     add_data(scenario, job_id)
     configure()
     appMgr, evt = track_tools.initialise()
@@ -73,6 +74,10 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         true_clusters = pd.read_msgpack(true_clusters_fn)
         if isinstance(true_clusters, list):
             true_clusters = pd.concat(true_clusters)
+            true_clusters['run_number'] = pd.to_numeric(true_clusters['run_number'], downcast='unsigned')
+            true_clusters['event_number'] = pd.to_numeric(true_clusters['event_number'], downcast='unsigned')
+            true_clusters.set_index(['run_number', 'event_number', 'channel_id'], inplace=True)
+            true_clusters.sortlevel(inplace=True)
     else:
         true_clusters = None
 
@@ -83,7 +88,11 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
 
     write_msgpack.do_append = False
 
+    if show_progress:
+        pbar = tqdm()
     while True:
+        if show_progress:
+            pbar.update(1)
         n_event = track_tools.run()
 
         # Look at the header
@@ -101,10 +110,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
         if true_clusters is None:
             true_clusters_for_event = None
         else:
-            true_clusters_for_event = true_clusters.query(
-                '(run_number == {run_number}) & (event_number == {event_number})'
-                .format(run_number=run_number, event_number=event_number)
-            )
+            true_clusters_for_event = true_clusters.loc[run_number, event_number]
 
         # Store information about the tracks
         for track_number, track in enumerate(map(Track, evt['Rec/Track/Best'])):
@@ -147,12 +153,11 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
                 if true_clusters_for_event is None:
                     hit_data.extend([None]*6)
                 else:
-                    true_cluster = true_clusters_for_event[
-                        (true_clusters_for_event.channel_id == hit.cluster.channel_id)
-                    ]
-                    assert len(true_cluster) == 1
-                    true_cluster = true_cluster.iloc[0]
-                    true_point = XYZPoint(true_cluster.x, true_cluster.y, true_cluster.z)
+                    true_point = XYZPoint(
+                        true_clusters_for_event.at[float(hit.cluster.channel_id), 'x'],
+                        true_clusters_for_event.at[float(hit.cluster.channel_id), 'y'],
+                        true_clusters_for_event.at[float(hit.cluster.channel_id), 'z']
+                    )
                     true_intercept, true_residual = track.fit_to_point(true_point)
                     hit_data.extend([true_intercept.x(), true_intercept.y(), true_intercept.z()])
                     hit_data.extend([true_residual.x(), true_residual.y(), true_residual.z()])
@@ -190,6 +195,9 @@ def read_tracks_and_clusters(scenario, job_id, n_events):
             tracks = []
             residuals = []
             particles = []
+
+    if show_progress:
+        pbar.close()
 
     write_msgpack(scenario, job_id, clusters, tracks, particles, residuals)
 
@@ -247,6 +255,10 @@ if __name__ == '__main__':
         '--n-events', '-n', type=int, default=100,
         help='The reconstruction scenario to use'
     )
+    parser.add_argument(
+        '--progress', action='store_true',
+        help='Show a progress bar while running'
+    )
 
     args = parser.parse_args()
-    read_tracks_and_clusters(args.scenario, args.job_id, args.n_events)
+    read_tracks_and_clusters(args.scenario, args.job_id, args.n_events, args.progress)

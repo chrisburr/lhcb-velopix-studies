@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import argparse
 from random import gauss
-from math import asin, cos
+from math import asin, cos, sin
 from os import makedirs
 from os.path import dirname, isdir, join
 
@@ -56,7 +56,7 @@ def make_global_xml(basedir):
         f.write(xml)
 
 
-def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
+def make_modules_xml(basedir, x_distortion, y_distortion, sigma, alternate=False):
     modules_fn = join(basedir, 'SIMCOND/Conditions/VP/Alignment/Modules.xml')
     if not isdir(dirname(basedir)):
         makedirs(dirname(basedir))
@@ -64,6 +64,14 @@ def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
     xml = HEADER
     module_width = 100000
     for i in range(52):
+        if alternate and int(i/2) % 2 == 0:
+            xml += MODULE.format(
+                class_id=6, name='Module{i:02d}'.format(i=i),
+                tx=0, ty=0, tz=0,
+                rx=0, ry=0, rz=0
+            )
+            continue
+
         rx = asin(x_distortion / module_width)
         if sigma > 0:
             rx = gauss(rx, sigma*abs(rx))
@@ -77,7 +85,7 @@ def make_modules_xml(basedir, x_distortion, y_distortion, sigma):
         assert rx == rz == 0
         x_over_reach = 22810
         tx = - module_width/1000 * (1-cos(ry)) * (1-x_over_reach/module_width)
-        tz = - y_distortion/1000 * (1-x_over_reach/module_width)
+        tz = - module_width/1000 * sin(ry) * (1-x_over_reach/module_width)
 
         xml += MODULE.format(
             class_id=6, name='Module{i:02d}'.format(i=i),
@@ -95,8 +103,9 @@ if __name__ == '__main__':
     parser.add_argument('--x-distortion', type=float, default=0)
     parser.add_argument('--y-distortion', type=float, default=0)
     parser.add_argument('--sigma', type=float, default=0)
+    parser.add_argument('--alternate', action='store_true')
 
     args = parser.parse_args()
 
     make_global_xml(args.basedir)
-    make_modules_xml(args.basedir, args.x_distortion, args.y_distortion, args.sigma)
+    make_modules_xml(args.basedir, args.x_distortion, args.y_distortion, args.sigma, args.alternate)

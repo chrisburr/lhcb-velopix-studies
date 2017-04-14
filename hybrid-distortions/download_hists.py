@@ -7,6 +7,7 @@ import subprocess
 
 from Ganga.GPI import jobs
 
+assert modified
 
 def download_hists(lfn, outdir):
     process = subprocess.Popen(
@@ -21,11 +22,11 @@ tp = ThreadPool(64)
 
 for j in jobs:
     scenario = j.comment[:-len(' reconstruction ')]
-    outdir = join('output/scenarios', scenario, 'hists')
+    outdir = join('output_final/scenarios', scenario, 'hists')
     if not isdir(outdir):
         makedirs(outdir)
     for sj in j.subjobs:
-        if sj.status != 'completed':
+        if sj.status != 'completed' or sj.id not in jids:
             continue
         for f in sj.outputfiles:
             _outdir = join(outdir, str(sj.id))

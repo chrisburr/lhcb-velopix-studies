@@ -64,7 +64,7 @@ def configure():
     appConf.TopAlg += [PreLoadPions, PreLoadKaons]
 
 
-def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
+def read_tracks_and_clusters(scenario, job_id, n_events):
     add_data(scenario, job_id)
     configure()
     appMgr, evt = track_tools.initialise()
@@ -88,11 +88,9 @@ def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
 
     write_msgpack.do_append = False
 
-    if show_progress:
-        pbar = tqdm()
+    # pbar = tqdm(total=100)
     while True:
-        if show_progress:
-            pbar.update(1)
+        # pbar.update(1)
         n_event = track_tools.run()
 
         # Look at the header
@@ -110,6 +108,10 @@ def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
         if true_clusters is None:
             true_clusters_for_event = None
         else:
+            # true_clusters_for_event = true_clusters.query(
+            #     '(run_number == {run_number}) & (event_number == {event_number})'
+            #     .format(run_number=run_number, event_number=event_number)
+            # )
             true_clusters_for_event = true_clusters.loc[run_number, event_number]
 
         # Store information about the tracks
@@ -153,6 +155,12 @@ def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
                 if true_clusters_for_event is None:
                     hit_data.extend([None]*6)
                 else:
+                    # true_cluster = true_clusters_for_event[
+                    #     (true_clusters_for_event.channel_id == hit.cluster.channel_id)
+                    # ]
+                    # true_cluster = true_clusters_for_event.loc[hit.cluster.channel_id]
+                    # assert len(true_cluster) == 1
+                    # true_cluster = true_cluster.iloc[0]
                     true_point = XYZPoint(
                         true_clusters_for_event.at[float(hit.cluster.channel_id), 'x'],
                         true_clusters_for_event.at[float(hit.cluster.channel_id), 'y'],
@@ -196,8 +204,7 @@ def read_tracks_and_clusters(scenario, job_id, n_events, show_progress=False):
             residuals = []
             particles = []
 
-    if show_progress:
-        pbar.close()
+    # pbar.close()
 
     write_msgpack(scenario, job_id, clusters, tracks, particles, residuals)
 
@@ -255,10 +262,6 @@ if __name__ == '__main__':
         '--n-events', '-n', type=int, default=100,
         help='The reconstruction scenario to use'
     )
-    parser.add_argument(
-        '--progress', action='store_true',
-        help='Show a progress bar while running'
-    )
 
     args = parser.parse_args()
-    read_tracks_and_clusters(args.scenario, args.job_id, args.n_events, args.progress)
+    read_tracks_and_clusters(args.scenario, args.job_id, args.n_events)

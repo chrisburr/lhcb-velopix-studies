@@ -55,13 +55,10 @@ def _load(df_name, scenarios, n_files):
         for i in range(n_files):
             fn = f'output/scenarios/{scenario}/{df_name}_{i}.msg'
             if os.path.isfile(fn):
-                print('Found', fn)
                 df = pd.read_msgpack(fn)
                 df['scenario'] = pd.Categorical([scenario]*len(df), categories=scenarios)
                 dfs.append(df)
                 valid = True
-            else:
-                print('Skipping', fn)
         if not valid:
             raise ValueError(scenario, df_name)
     return df_name, pd.concat(dfs)
@@ -73,13 +70,17 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'],
             scenarios.append(scenario[len('output/scenarios/'):-len('/particles_0.msg')])
 
     data = Parallel(n_jobs=4, backend='threading')(
-        delayed(_load)(n, scenarios, [10, 1][fast]) for n in names
+        delayed(_load)(n, scenarios, [62, 1][fast]) for n in names
     )
     data = dict(data)
 
     if 'residuals' in names:
         data['residuals']['station'] = np.floor_divide(data['residuals'].module, 2)
-        data['residuals']['station'] = data['residuals']['station'].astype('category')
+        try:
+            data['residuals']['station'] = pd.to_numeric(data['residuals']['station'], downcast='unsigned')
+            data['residuals']['station'] = data['residuals']['station'].astype('category')
+        except Exception:
+            raise Exception(repr(data['residuals']['station'])+'\n'+repr(np.unique(data['residuals']['station'])))
         data['residuals'] = {k: v for k, v in data['residuals'].groupby('scenario')}
 
     if 'tracks' in names:
@@ -112,6 +113,8 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'],
         data['particles'].eval('D0_p = sqrt(D0_p_x**2 + D0_p_y**2 + D0_p_z**2)', inplace=True)
         data['particles'].eval(f'D0_gamma = 1/sqrt(1 + D0_p**2/{D0_mass**2})', inplace=True)
 
+        data['particles'].eval('D0_true_p = sqrt(D0_true_p_x**2 + D0_true_p_y**2 + D0_true_p_z**2)', inplace=True)
+        data['particles'].eval(f'D0_true_gamma = 1/sqrt(1 + D0_true_p**2/{D0_mass**2})', inplace=True)
 
     return tuple([data[k] for k in names])
 
@@ -119,14 +122,20 @@ def format_label(s):
     if s == 'Original_DB' or s == 'Nominal':
         return 'Nominal'
     elif s.startswith('tip_x=0um_y='):
+        if s.endswith('_alternate'):
+            s = s[:-len('_alternate')]
+            alternate = ' alt'
+        else:
+            alternate = ''
         s = s[len('tip_x=0um_y='):]
         s = s.split('_sigma=')
+        
         if len(s) == 2:
             mu, sigma = s
-            sigma = f' $\sigma$ = {sigma}$\mu$m'
+            sigma = f' $\sigma$ = {sigma}$\mu$m{alternate}'
         else:
             mu, = s
             sigma = ''
-        return f'$\mu$ = {mu[:-2]}$\mu$m{sigma}'
+        return f'$\mu$ = {mu[:-2]}$\mu$m{sigma}{alternate}'
     else:
         raise ValueError(s)

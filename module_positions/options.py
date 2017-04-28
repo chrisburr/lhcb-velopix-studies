@@ -21,5 +21,5 @@ GaudiSequencer("CheckPatSeq").Members = [
     "VPClusterMonitor"
 ]
 
-LHCbApp().DDDBtag = "dddb-20170218"
-LHCbApp().CondDBtag = "sim-20170210-vc-md100"
+LHCbApp().DDDBtag = "dddb-20170301"
+LHCbApp().CondDBtag = "sim-20170301-vc-md100"

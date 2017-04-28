@@ -2,6 +2,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import argparse
 import json
 import os
 
@@ -50,18 +51,28 @@ def find_corners_of_cuboid(geo):
     return corners
 
 
-def make_geometry_json():
-    appMgr = GaudiPython.AppMgr(outputlevel=3, joboptions='options.py')
+def make_geometry_json(misaligned=False):
+    if misaligned:
+        options_fn = 'options_{}.py'.format(misaligned)
+        output_fn_local = 'output/velo_geometry_{}_local.json'.format(misaligned)
+        output_fn_global = 'output/velo_geometry_{}_global.json'.format(misaligned)
+        sides = ['Left', 'Right']
+    else:
+        options_fn = 'options.py'
+        output_fn_local = 'output/velo_geometry_local.json'
+        output_fn_global = 'output/velo_geometry_global.json'
+        sides = ['Right', 'Left']
+
+    appMgr = GaudiPython.AppMgr(outputlevel=3, joboptions=options_fn)
     det = appMgr.detSvc()
 
     velo_geometry_local = {}
     velo_geometry_global = {}
-
     for i in range(52):
         module_key = (
             '/dd/Structure/LHCb/BeforeMagnetRegion/VP/VP{side}/'
             'Module{i:002d}WithSupport/Module{i:002d}'
-            .format(i=i, side=['Right', 'Left'][i % 2 == 1])
+            .format(i=i, side=sides[i % 2 == 1])
         )
         for ladder in det[module_key].childIDetectorElements():
             geo = ladder.geometry()
@@ -78,10 +89,10 @@ def make_geometry_json():
             velo_geometry_global[ladder.name()] = pos_global
 
     # Dump the geometry to json
-    with open('output/velo_geometry_local.json', 'wt') as f:
+    with open(output_fn_local, 'wt') as f:
         json.dump(velo_geometry_local, f)
 
-    with open('output/velo_geometry_global.json', 'wt') as f:
+    with open(output_fn_global, 'wt') as f:
         json.dump(velo_geometry_global, f)
 
     return velo_geometry_local, velo_geometry_global
@@ -90,4 +101,6 @@ def make_geometry_json():
 if __name__ == '__main__':
     if not os.path.isdir('output'):
         os.makedirs('output')
-    make_geometry_json()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--misalignment', required=False, default='')
+    make_geometry_json(misaligned=parser.parse_args().misalignment)

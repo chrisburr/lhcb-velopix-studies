@@ -379,7 +379,7 @@ def fit_vertex(kp_track, km_track, pi_track):
 
     best_chi2 = 1e1000
     best_pv = None
-    func = VIPCHI2(D0, loki_algo.geo())
+    func = VIPCHI2(pi, loki_algo.geo())
     for pv in get_pvs():
         chi2 = func(pv)
         if best_chi2 > chi2:

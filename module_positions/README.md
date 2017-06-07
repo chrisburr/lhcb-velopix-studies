@@ -2,11 +2,14 @@
 
 
 ## Running
+
+First modify `options.py` to specify the database which should be used, the json used by the notebook can then generated using Brunel:
+
 ```bash
 lb-run Brunel/v51r1 python make_velo_geometry_json.py
-# The notebook can then be executed
-
 ```
+
+The jupyter notebook can then be executed to produce the plots.
 
 ## Defintion of positions
 

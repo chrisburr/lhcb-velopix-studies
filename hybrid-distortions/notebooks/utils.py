@@ -70,7 +70,7 @@ def load(scenarios=None, names=['clusters', 'tracks', 'residuals', 'particles'],
             scenarios.append(scenario[len('output/scenarios/'):-len('/particles_0.msg')])
 
     data = Parallel(n_jobs=4, backend='threading')(
-        delayed(_load)(n, scenarios, [62, 1][fast]) for n in names
+        delayed(_load)(n, scenarios, [62 if n == 'particles' else 10, 1][fast]) for n in names
     )
     data = dict(data)
 
